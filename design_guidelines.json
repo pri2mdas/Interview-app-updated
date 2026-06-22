@@ -1,0 +1,99 @@
+{
+  "theme_archetype": {
+    "name": "Retro-Futurism / Swiss High-Contrast (Developer Tools)",
+    "theme": "Dark",
+    "rationale": "For DevOps and DevSecOps engineers, the interface must feel like a high-stakes command center or terminal, not a generic SaaS app. Objective, functional, and deeply technical."
+  },
+  "brand_colors": {
+    "background": "bg-zinc-950",
+    "surface": "bg-zinc-900",
+    "border": "border-zinc-800",
+    "primary": "bg-green-500",
+    "primary_hover": "hover:bg-green-400",
+    "primary_text": "text-green-400",
+    "accent_blue": "text-blue-500",
+    "warning": "text-amber-500",
+    "danger": "text-red-500",
+    "neutral_text": "text-zinc-100",
+    "muted_text": "text-zinc-400"
+  },
+  "typography": {
+    "instructions": "Import via Google Fonts in index.css: @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700;900&display=swap'); Apply fonts via Tailwind config or inline classes.",
+    "headings": {
+      "family": "'Outfit', sans-serif",
+      "classes": "font-sans tracking-tight"
+    },
+    "body_and_data": {
+      "family": "'JetBrains Mono', monospace",
+      "classes": "font-mono leading-relaxed"
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight",
+      "h3": "text-xl sm:text-2xl",
+      "body": "text-sm sm:text-base text-zinc-300",
+      "labels": "text-xs uppercase tracking-[0.2em]",
+      "timer_metrics": "text-5xl sm:text-6xl font-mono tracking-tighter"
+    }
+  },
+  "surfaces_and_micro_themes": {
+    "cards": "Cardless or flat surfaces. Use bg-zinc-900 border border-zinc-800 rounded-sm. No soft shadows.",
+    "header": "Solid dark background bg-zinc-950 with a strict border-b border-zinc-800. No glassmorphism.",
+    "buttons": "Sharp edges (rounded-sm). Primary: bg-green-500 text-zinc-950 hover:bg-green-400 font-bold. Ghost/Secondary: border border-zinc-700 hover:border-green-500 hover:text-green-400.",
+    "grid_borders": "For the interview room and feedback dashboard, expose the grid skeleton. Use border-collapse style layouts with border-r border-b border-zinc-800."
+  },
+  "spacing_and_layout": {
+    "philosophy": "Dense but highly structured. Every pixel is utilized for data correlation.",
+    "containers": "Padding must be internal (p-6 or p-8) to prevent text collision on bordered elements.",
+    "grid_mode": "Use 'The Control Room' Grid (Mode B). grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-4 or seamless gap-0 if using grid borders."
+  },
+  "motion_and_interactions": {
+    "hover_states": "Hard state changes. ALWAYS explicitly set hover text color (e.g., hover:bg-zinc-800 hover:text-zinc-100).",
+    "transitions": "Fast and snappy. Use transition-colors duration-150.",
+    "special_effects": "Blinking cursor (animate-pulse) for active terminal inputs. Glowing text shadow on active timer."
+  },
+  "component_instructions": {
+    "icons": "Install and use react-icons for tech stacks (SiAmazonaws, SiKubernetes, SiTerraform, SiDocker). Use lucide-react for standard UI icons.",
+    "forms": "Customize Shadcn components. Strip out Vercel-look. Apply bg-zinc-900 border-zinc-800 focus:ring-1 focus:ring-green-500 rounded-sm font-mono.",
+    "charts": "Use Recharts. Style with neon green/blue lines on fully transparent backgrounds. No default tooltips; match the dark terminal theme.",
+    "accessibility": "MUST include data-testid on all interactive and key informational elements (buttons, inputs, timers, scores, history rows). e.g., data-testid=\"start-interview-btn\"."
+  },
+  "page_specific_designs": {
+    "landing_page": {
+      "layout": "Asymmetric Bento Grid (Mode A) for features.",
+      "visuals": "Hero uses the code matrix image with heavy bg-zinc-950/80 overlay. Do not hide the image completely. Headline left-aligned, massive.",
+      "cta": "Monospaced, high-contrast button. 'INITIATE_SESSION()'"
+    },
+    "setup_page": {
+      "layout": "Control room panel. 3-column grid for tech stack selection. Logo + Monospace Label.",
+      "interaction": "Selected tech tile gets a 1px green border and a green 'SELECTED' terminal label."
+    },
+    "live_interview_room": {
+      "layout": "Split layout. Left pane (70%): Chat/Voice feed styled like a terminal stdout. Right pane (30%): Command Center (Timer, Question counter, Real-time score, progress bar).",
+      "chat_interface": "Do NOT use standard chat bubbles. Use log-style feeds. `root@ai:~# [Question text]` and `user@candidate:~# [Answer text]`.",
+      "timer": "Massive monospace numbers. Shift color to text-red-500 when under 10 minutes."
+    },
+    "feedback_report": {
+      "layout": "Data-heavy dashboard. Top row: Score cards. Middle row: Mastery radar chart. Bottom: Log of all Q&A with diff-style syntax highlighting (green for correct, red for missing).",
+      "data_viz": "Strict, objective color coding. Green = Strong, Amber = Needs work, Red = Critical."
+    },
+    "history_dashboard": {
+      "layout": "Dense log-style table for past sessions. Columns for Date, Topic, Difficulty, Score. Visual sparklines for trend visualization."
+    }
+  },
+  "media": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwyfHxjb2RlJTIwbmV0d29yayUyMG1hdHJpeCUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc4MjE0OTM2OHww&ixlib=rb-4.1.0&q=85",
+      "description": "Code matrix on monitor. Use in Hero section with heavy dark overlay (bg-zinc-950/80)."
+    },
+    "server_texture": {
+      "url": "https://images.pexels.com/photos/37730211/pexels-photo-37730211.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Modern server rack. Use as subtle texture for secondary sections (e.g., inside bento grid cards)."
+    }
+  },
+  "dependencies_to_add": [
+    "react-icons",
+    "recharts",
+    "lucide-react"
+  ]
+}
