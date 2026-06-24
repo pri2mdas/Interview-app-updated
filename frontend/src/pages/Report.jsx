@@ -54,7 +54,7 @@ export default function Report() {
   if (!report) {
     return (
       <div className="min-h-screen relative z-10 bg-white dark:bg-zinc-950 flex items-center justify-center">
-        <div className="font-mono-ui text-zinc-500 dark:text-zinc-800 dark:text-zinc-300">No report available.</div>
+        <div className="font-mono-ui text-zinc-500 dark:text-zinc-800 dark:text-zinc-100">No report available.</div>
       </div>
     );
   }
@@ -72,7 +72,7 @@ export default function Report() {
           <div>
             <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mb-3">// session_complete</div>
             <h1 className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Feedback Report</h1>
-            <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 mt-2">
+            <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 mt-2">
               {session?.candidate_name} · {session?.difficulty} · {(session?.topics || []).join(", ")}
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function Report() {
             <button
               data-testid="report-history-btn"
               onClick={() => navigate("/history")}
-              className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 hover:border-green-600 dark:hover:border-green-500 hover:text-green-600 dark:text-green-400 px-4 py-3 rounded-sm transition-colors"
+              className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 hover:border-green-600 dark:hover:border-green-500 hover:text-green-600 dark:text-green-400 px-4 py-3 rounded-sm transition-colors"
             >
               view_history
             </button>
@@ -147,7 +147,7 @@ export default function Report() {
                 {radarData.map((t) => (
                   <div key={t.topic}>
                     <div className="flex justify-between font-mono-ui text-xs mb-1">
-                      <span className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-300">{t.topic}</span>
+                      <span className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-100">{t.topic}</span>
                       <span className="text-green-600 dark:text-green-400">{t.score}/100</span>
                     </div>
                     <div className="h-1.5 bg-zinc-200 dark:bg-zinc-800">
@@ -200,9 +200,9 @@ export default function Report() {
                 <div className="col-span-3 font-mono-ui text-sm text-zinc-900 dark:text-zinc-100">{t.topic}</div>
                 <div className="col-span-2 font-mono-ui text-sm">
                   <span className={t.score >= 70 ? "text-green-600 dark:text-green-400" : t.score >= 40 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}>{t.score}</span>
-                  <span className="text-zinc-700 dark:text-zinc-500">/100</span>
+                  <span className="text-zinc-700 dark:text-zinc-300">/100</span>
                 </div>
-                <div className="col-span-7 font-mono-ui text-xs text-zinc-500 dark:text-zinc-800 dark:text-zinc-300">{t.notes}</div>
+                <div className="col-span-7 font-mono-ui text-xs text-zinc-500 dark:text-zinc-800 dark:text-zinc-100">{t.notes}</div>
               </div>
             ))}
           </div>
@@ -217,7 +217,7 @@ export default function Report() {
                 {m.role === "interviewer" ? (
                   <div>
                     <div className="text-zinc-500 text-xs mb-1">
-                      <span className="text-green-600 dark:text-green-400">root@ai</span><span className="text-zinc-700 dark:text-zinc-500">:~$ </span>
+                      <span className="text-green-600 dark:text-green-400">root@ai</span><span className="text-zinc-700 dark:text-zinc-300">:~$ </span>
                       <span>[{m.topic} / {m.question_type}]</span>
                     </div>
                     <div className="text-zinc-900 dark:text-zinc-100 pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
@@ -225,12 +225,12 @@ export default function Report() {
                 ) : (
                   <div>
                     <div className="text-zinc-500 text-xs mb-1 flex items-center gap-2">
-                      <span className="text-amber-600 dark:text-amber-400">user@candidate</span><span className="text-zinc-700 dark:text-zinc-500">:~$ </span>
+                      <span className="text-amber-600 dark:text-amber-400">user@candidate</span><span className="text-zinc-700 dark:text-zinc-300">:~$ </span>
                       {m.score != null && (
                         <span className={`px-1.5 py-0.5 text-[10px] ${m.score >= 7 ? "text-green-600 dark:text-green-400 bg-green-600/15 dark:bg-green-500/10" : m.score >= 4 ? "text-amber-600 dark:text-amber-400 bg-amber-600/15 dark:bg-amber-500/10" : "text-red-600 dark:text-red-400 bg-red-600/15 dark:bg-red-500/10"}`}>{m.score}/10</span>
                       )}
                     </div>
-                    <div className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
+                    <div className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
                     {m.feedback && <div className="text-zinc-500 text-xs italic mt-1 pl-2">// {m.feedback}</div>}
                   </div>
                 )}

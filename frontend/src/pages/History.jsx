@@ -39,7 +39,7 @@ export default function History() {
           <div>
             <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mb-3">// archive</div>
             <h1 className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Session History</h1>
-            <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 mt-2">All past interviews. Click any row to view the full report.</p>
+            <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 mt-2">All past interviews. Click any row to view the full report.</p>
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500">filter_by_name</label>
@@ -48,7 +48,7 @@ export default function History() {
               value={filter}
               onChange={(e) => refilter(e.target.value)}
               placeholder="all candidates"
-              className="bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-green-500 outline-none font-mono-ui text-sm text-zinc-900 dark:text-zinc-100 py-2 px-1 placeholder:text-zinc-700 dark:text-zinc-500 transition-colors min-w-[240px]"
+              className="bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-green-500 outline-none font-mono-ui text-sm text-zinc-900 dark:text-zinc-100 py-2 px-1 placeholder:text-zinc-700 dark:text-zinc-300 transition-colors min-w-[240px]"
             />
           </div>
         </div>
@@ -90,12 +90,12 @@ export default function History() {
                     onClick={() => navigate(s.status === "completed" ? `/report/${s.id}` : `/interview/${s.id}`)}
                     className="w-full grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-zinc-100 dark:bg-zinc-900/60 transition-colors text-left group"
                   >
-                    <div className="col-span-3 font-mono-ui text-xs text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-500" /> {formatDate(s.started_at)}
+                    <div className="col-span-3 font-mono-ui text-xs text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" /> {formatDate(s.started_at)}
                     </div>
                     <div className="col-span-2 font-mono-ui text-sm text-zinc-900 dark:text-zinc-100">{s.candidate_name}</div>
-                    <div className="col-span-3 font-mono-ui text-xs text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 truncate">{(s.topics || []).join(", ")}</div>
-                    <div className="col-span-1 font-mono-ui text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-700 dark:text-zinc-300">{s.difficulty}</div>
+                    <div className="col-span-3 font-mono-ui text-xs text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 truncate">{(s.topics || []).join(", ")}</div>
+                    <div className="col-span-1 font-mono-ui text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-700 dark:text-zinc-100">{s.difficulty}</div>
                     <div className="col-span-2">
                       <span className={`font-mono-ui text-[10px] uppercase tracking-[0.2em] px-2 py-1 ${s.status === "completed" ? "bg-green-600/15 dark:bg-green-500/10 text-green-600 dark:text-green-400" : "bg-amber-600/15 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"}`}>
                         {s.status}
@@ -105,7 +105,7 @@ export default function History() {
                       <span className={`font-mono-ui font-bold text-base ${overall >= 70 ? "text-green-600 dark:text-green-400" : overall >= 40 ? "text-amber-600 dark:text-amber-400" : overall != null ? "text-red-600 dark:text-red-400" : "text-zinc-500"}`}>
                         {overall != null ? overall : avg ? `${avg}/10` : "—"}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-zinc-700 dark:text-zinc-500 group-hover:text-green-600 dark:text-green-400 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-zinc-700 dark:text-zinc-300 group-hover:text-green-600 dark:text-green-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </button>
                 );

@@ -46,7 +46,7 @@ export default function Landing() {
 
             <p
               data-testid="hero-sub"
-              className="mt-8 max-w-2xl font-mono-ui text-sm sm:text-base text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 leading-relaxed fade-up"
+              className="mt-8 max-w-2xl font-mono-ui text-sm sm:text-base text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 leading-relaxed fade-up"
               style={{ animationDelay: "0.15s" }}
             >
               60-minute timed sessions with an AI Staff Engineer interviewer. Scenario-based questions,
@@ -66,7 +66,7 @@ export default function Landing() {
               <button
                 data-testid="hero-cta-history"
                 onClick={() => navigate("/history")}
-                className="font-mono-ui text-sm uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 hover:border-green-600 dark:hover:border-green-500 hover:text-green-600 dark:text-green-400 px-7 py-4 rounded-sm transition-colors"
+                className="font-mono-ui text-sm uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 hover:border-green-600 dark:hover:border-green-500 hover:text-green-600 dark:text-green-400 px-7 py-4 rounded-sm transition-colors"
               >
                 view_history
               </button>
@@ -98,7 +98,7 @@ export default function Landing() {
               Engineered for serious prep.
             </h2>
           </div>
-          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 max-w-md">
+          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 max-w-md">
             No generic question banks. Every interview is generated live, adapts to your answers, and probes weaknesses.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function Landing() {
               <f.icon className="w-7 h-7 text-green-600 dark:text-green-400 mb-6" strokeWidth={1.5} />
               <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">/ {String(i + 1).padStart(2, "0")}</div>
               <h3 className="font-display font-bold text-zinc-900 dark:text-zinc-50 text-xl mb-3 group-hover:text-green-600 dark:text-green-400 transition-colors">{f.label}</h3>
-              <p className="text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 text-sm leading-relaxed">{f.desc}</p>
+              <p className="text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -149,8 +149,8 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 mx-auto max-w-7xl px-6 flex justify-between items-center">
-        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-500">© opsgrid.sh — built for engineers</div>
-        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-500">claude_sonnet_4.5 / whisper-1</div>
+        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-300">© opsgrid.sh — built for engineers</div>
+        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-300">claude_sonnet_4.5 / whisper-1</div>
       </footer>
     </div>
   );

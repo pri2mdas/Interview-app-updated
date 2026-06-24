@@ -72,7 +72,7 @@ export default function Setup() {
         <div className="mb-12">
           <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mb-3">// setup</div>
           <h1 className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Configure session</h1>
-          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 mt-3">Select your stack, difficulty, and mode. The interviewer will adapt.</p>
+          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 mt-3">Select your stack, difficulty, and mode. The interviewer will adapt.</p>
         </div>
 
         {/* Name */}
@@ -94,7 +94,7 @@ export default function Setup() {
             <button
               data-testid="setup-select-all-btn"
               onClick={() => setSelectedTopics(selectedTopics.length === topics.length ? [] : topics.map((t) => t.id))}
-              className="font-mono-ui text-[10px] tracking-[0.25em] uppercase text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 hover:text-green-600 dark:text-green-400 transition-colors"
+              className="font-mono-ui text-[10px] tracking-[0.25em] uppercase text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 hover:text-green-600 dark:text-green-400 transition-colors"
             >
               {selectedTopics.length === topics.length ? "clear_all" : "select_all"}
             </button>
@@ -112,7 +112,7 @@ export default function Setup() {
                     active ? "bg-zinc-100 dark:bg-zinc-900 border border-green-500 -m-px" : "bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:bg-zinc-900 border border-transparent -m-px"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${active ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-700 dark:text-zinc-300"}`} />
+                  <Icon className={`w-6 h-6 ${active ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-700 dark:text-zinc-100"}`} />
                   <div>
                     <div className={`font-mono-ui text-sm ${active ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-800 dark:text-zinc-200"}`}>{t.name}</div>
                     {active && <div className="font-mono-ui text-[9px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mt-2">selected</div>}
@@ -136,7 +136,7 @@ export default function Setup() {
                   className={`text-left p-3 border transition-colors ${
                     difficulty === d.id
                       ? "border-green-500 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50"
-                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 hover:border-zinc-400 dark:border-zinc-600 hover:text-zinc-800 dark:text-zinc-200"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 hover:border-zinc-400 dark:border-zinc-600 hover:text-zinc-800 dark:text-zinc-200"
                   }`}
                 >
                   <div className="font-mono-ui text-sm">{d.label}</div>
@@ -160,7 +160,7 @@ export default function Setup() {
                   className={`text-left p-3 border transition-colors ${
                     mode === m.id
                       ? "border-green-500 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50"
-                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 hover:border-zinc-400 dark:border-zinc-600 hover:text-zinc-800 dark:text-zinc-200"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 hover:border-zinc-400 dark:border-zinc-600 hover:text-zinc-800 dark:text-zinc-200"
                   }`}
                 >
                   <div className="font-mono-ui text-sm">{m.label}</div>
@@ -195,7 +195,7 @@ export default function Setup() {
             data-testid="setup-start-btn"
             onClick={start}
             disabled={!canStart}
-            className="group font-mono-ui text-sm uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 disabled:bg-zinc-200 dark:bg-zinc-800 disabled:text-zinc-700 dark:text-zinc-500 disabled:cursor-not-allowed px-7 py-4 rounded-sm font-bold transition-colors inline-flex items-center gap-3"
+            className="group font-mono-ui text-sm uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 disabled:bg-zinc-200 dark:bg-zinc-800 disabled:text-zinc-700 dark:text-zinc-300 disabled:cursor-not-allowed px-7 py-4 rounded-sm font-bold transition-colors inline-flex items-center gap-3"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
             {loading ? "spinning_up..." : "begin_interview()"}

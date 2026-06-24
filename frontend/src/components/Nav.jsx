@@ -17,7 +17,7 @@ export default function Nav({ minimal = false }) {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="font-display font-black text-zinc-900 dark:text-zinc-50 text-base tracking-tight">OPSGRID</span>
-            <span className="font-mono-ui text-[10px] tracking-[0.25em] text-zinc-700 dark:text-zinc-400 uppercase">mock_interview.sh</span>
+            <span className="font-mono-ui text-[10px] tracking-[0.25em] text-zinc-700 dark:text-zinc-200 uppercase">mock_interview.sh</span>
           </div>
         </Link>
 
@@ -26,7 +26,7 @@ export default function Nav({ minimal = false }) {
             data-testid="theme-toggle-btn"
             onClick={toggle}
             aria-label="Toggle theme"
-            className="font-mono-ui text-xs uppercase tracking-[0.2em] text-zinc-800 dark:text-zinc-300 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 transition-colors flex items-center gap-2 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 rounded-sm"
+            className="font-mono-ui text-xs uppercase tracking-[0.2em] text-zinc-800 dark:text-zinc-100 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 transition-colors flex items-center gap-2 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 rounded-sm"
           >
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             <span className="hidden sm:inline">{theme === "dark" ? "light" : "dark"}</span>
@@ -36,7 +36,7 @@ export default function Nav({ minimal = false }) {
               <button
                 data-testid="nav-history-btn"
                 onClick={() => navigate("/history")}
-                className="font-mono-ui text-xs uppercase tracking-[0.2em] text-zinc-800 dark:text-zinc-300 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 transition-colors flex items-center gap-2"
+                className="font-mono-ui text-xs uppercase tracking-[0.2em] text-zinc-800 dark:text-zinc-100 hover:text-green-600 dark:hover:text-green-400 px-3 py-2 transition-colors flex items-center gap-2"
               >
                 <HistoryIcon className="w-4 h-4" /> history
               </button>
