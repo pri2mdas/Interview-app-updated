@@ -1,0 +1,17 @@
+{
+  "summary": "Verified dark-mode text color fix on Landing page. In dark mode, hero-sub paragraph and all 6 feature card descriptions now render pure white (rgb(255,255,255)). Light mode preserves dark zinc-800 (rgb(39,39,42)). Theme toggle works correctly.",
+  "tested_scope": ["frontend"],
+  "passed": [
+    "Theme toggle switches html.dark class correctly (light -> dark -> light)",
+    "Dark mode: [data-testid=hero-sub] computed color = rgb(255,255,255)",
+    "Dark mode: all 6 feature card <p> descriptions computed color = rgb(255,255,255) (features 0-5)",
+    "Light mode: hero-sub computed color = rgb(39,39,42) (zinc-800) - readable",
+    "Light mode: feature-0 description color = rgb(39,39,42) - readable",
+    "Visual screenshot of dark mode shows clearly visible white paragraph text against dark bg"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

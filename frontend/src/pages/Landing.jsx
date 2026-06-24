@@ -46,7 +46,7 @@ export default function Landing() {
 
             <p
               data-testid="hero-sub"
-              className="mt-8 max-w-2xl font-mono-ui text-sm sm:text-base text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 leading-relaxed fade-up"
+              className="mt-8 max-w-2xl font-mono-ui text-base sm:text-lg text-zinc-800 dark:text-white leading-relaxed fade-up"
               style={{ animationDelay: "0.15s" }}
             >
               60-minute timed sessions with an AI Staff Engineer interviewer. Scenario-based questions,
@@ -113,7 +113,7 @@ export default function Landing() {
               <f.icon className="w-7 h-7 text-green-600 dark:text-green-400 mb-6" strokeWidth={1.5} />
               <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">/ {String(i + 1).padStart(2, "0")}</div>
               <h3 className="font-display font-bold text-zinc-900 dark:text-zinc-50 text-xl mb-3 group-hover:text-green-600 dark:text-green-400 transition-colors">{f.label}</h3>
-              <p className="text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 text-sm leading-relaxed">{f.desc}</p>
+              <p className="text-zinc-800 dark:text-white text-base leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
