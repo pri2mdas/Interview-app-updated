@@ -81,6 +81,41 @@ webpackConfig.devServer = (devServerConfig) => {
   return devServerConfig;
 };
 
+// Patch: strip removed-in-WDSv5 options (onBeforeSetupMiddleware/onAfterSetupMiddleware) that CRA still emits.
+const _origDevServer = webpackConfig.devServer;
+webpackConfig.devServer = (devServerConfig) => {
+  let cfg = _origDevServer ? _origDevServer(devServerConfig) : devServerConfig;
+  if (cfg) {
+    delete cfg.onBeforeSetupMiddleware;
+    delete cfg.onAfterSetupMiddleware;
+    delete cfg.https;
+    delete cfg.http2;
+    delete cfg.transportMode;
+    delete cfg.sockHost;
+    delete cfg.sockPath;
+    delete cfg.sockPort;
+    delete cfg.injectClient;
+    delete cfg.injectHot;
+    delete cfg.publicPath;
+    delete cfg.contentBase;
+    delete cfg.contentBasePublicPath;
+    delete cfg.watchContentBase;
+    delete cfg.serveIndex;
+    delete cfg.useLocalIp;
+    delete cfg.public;
+    delete cfg.disableHostCheck;
+    delete cfg.overlay;
+    delete cfg.quiet;
+    delete cfg.noInfo;
+    delete cfg.stats;
+    delete cfg.logLevel;
+    delete cfg.before;
+    delete cfg.after;
+    delete cfg.features;
+  }
+  return cfg;
+};
+
 // Wrap with visual edits (automatically adds babel plugin, dev server, and overlay in dev mode)
 if (isDevServer) {
   try {

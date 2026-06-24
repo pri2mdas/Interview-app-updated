@@ -1,0 +1,24 @@
+{
+  "summary": "First-finish smoke test for DevOps Mock Interview platform. All 7 backend endpoints (topics, start, answer, end, get, list, transcribe) returned HTTP 200 with valid payloads. Full end-to-end frontend flow validated: Landing -> Setup (name + topics) -> Interview (submitted answer, received scored next question with avg score) -> End -> Report (overall_score=15, verdict='Strong No Hire', summary, topic_mastery, strengths) -> History (lists completed sessions filterable by name).",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "GET /api/topics returns 15 topics",
+    "POST /api/interview/start returns session_id + first question (kubernetes/concept) in ~15s using Claude Sonnet 4.5",
+    "POST /api/interview/answer scores previous answer (6, then 2), updates running_avg (6.0 -> 4.0), returns next question with topic/type",
+    "POST /api/interview/end generates report with overall_score=35, verdict='No Hire', strengths(3), weaknesses(5), topic_mastery(4), recommendations(6)",
+    "GET /api/interview/{id} returns full session with messages and scores",
+    "GET /api/interviews?candidate_name= filters list correctly",
+    "POST /api/voice/transcribe accepts 32KB WAV, returns {text: ''} via Whisper",
+    "Landing page renders with hero-cta-start, nav-start-btn, hero-cta-history testids",
+    "Setup page: setup-name-input, topic-aws, topic-kubernetes, setup-start-btn all present and functional",
+    "Interview page: answer-input, send-answer-btn, end-interview-btn present; question display, timer (60:00), avg_score panel render",
+    "End confirmation flow (end-interview-btn -> end-confirm-btn) navigates to /report/:id",
+    "Report page renders OVERALL_SCORE, VERDICT (Strong No Hire), executive summary, topic mastery, strengths",
+    "History page lists past sessions with date/candidate/topics/difficulty/status/score columns and filter-by-name"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
