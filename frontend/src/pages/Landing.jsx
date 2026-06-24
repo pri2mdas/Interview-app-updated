@@ -23,11 +23,11 @@ export default function Landing() {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-zinc-200 dark:border-zinc-800">
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-40"
+          className="absolute inset-0 bg-cover bg-center opacity-0 dark:opacity-40"
           style={{ backgroundImage: `url(${HERO_BG})` }}
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-950/85 to-zinc-950" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-white/95 to-white dark:from-zinc-950/70 dark:via-zinc-950/85 dark:to-zinc-950" aria-hidden />
         <div className="absolute inset-0 bg-grid opacity-40" aria-hidden />
 
         <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-32">

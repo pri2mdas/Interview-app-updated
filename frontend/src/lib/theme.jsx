@@ -4,8 +4,8 @@ const ThemeContext = createContext({ theme: "dark", toggle: () => {} });
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "dark";
-    return localStorage.getItem("opsgrid_theme") || "dark";
+    if (typeof window === "undefined") return "light";
+    return localStorage.getItem("opsgrid_theme") || "light";
   });
 
   useEffect(() => {
