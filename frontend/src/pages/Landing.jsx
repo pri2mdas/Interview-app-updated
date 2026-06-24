@@ -32,13 +32,6 @@ export default function Landing() {
 
         <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-32">
           <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 rounded-sm mb-8 fade-up">
-              <span className="w-2 h-2 bg-green-600 dark:bg-green-500 rounded-full animate-pulse" />
-              <span data-testid="hero-tag" className="font-mono-ui text-[11px] tracking-[0.25em] uppercase text-zinc-400 dark:text-zinc-700 dark:text-zinc-300">
-                v1.0.0 — production_grade
-              </span>
-            </div>
-
             <h1
               data-testid="hero-title"
               className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl lg:text-7xl tracking-tighter leading-[0.95] fade-up"
@@ -53,7 +46,7 @@ export default function Landing() {
 
             <p
               data-testid="hero-sub"
-              className="mt-8 max-w-2xl font-mono-ui text-sm sm:text-base text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 leading-relaxed fade-up"
+              className="mt-8 max-w-2xl font-mono-ui text-sm sm:text-base text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 leading-relaxed fade-up"
               style={{ animationDelay: "0.15s" }}
             >
               60-minute timed sessions with an AI Staff Engineer interviewer. Scenario-based questions,
@@ -105,7 +98,7 @@ export default function Landing() {
               Engineered for serious prep.
             </h2>
           </div>
-          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 max-w-md">
+          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 max-w-md">
             No generic question banks. Every interview is generated live, adapts to your answers, and probes weaknesses.
           </p>
         </div>
@@ -120,7 +113,7 @@ export default function Landing() {
               <f.icon className="w-7 h-7 text-green-600 dark:text-green-400 mb-6" strokeWidth={1.5} />
               <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">/ {String(i + 1).padStart(2, "0")}</div>
               <h3 className="font-display font-bold text-zinc-900 dark:text-zinc-50 text-xl mb-3 group-hover:text-green-600 dark:text-green-400 transition-colors">{f.label}</h3>
-              <p className="text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
+              <p className="text-zinc-500 dark:text-zinc-800 dark:text-zinc-300 text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -156,8 +149,8 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 mx-auto max-w-7xl px-6 flex justify-between items-center">
-        <div className="font-mono-ui text-xs text-zinc-500 dark:text-zinc-600">© opsgrid.sh — built for engineers</div>
-        <div className="font-mono-ui text-xs text-zinc-500 dark:text-zinc-600">claude_sonnet_4.5 / whisper-1</div>
+        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-500">© opsgrid.sh — built for engineers</div>
+        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-500">claude_sonnet_4.5 / whisper-1</div>
       </footer>
     </div>
   );
