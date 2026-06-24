@@ -1,0 +1,38 @@
+{
+  "summary": "Tested light/dark theme toggle on Landing, Setup, and History pages. Toggle works correctly: html.dark class is added/removed, localStorage persists across reloads, button label flips, and body bg switches between rgb(250,250,250) light and rgb(9,9,11) dark. Setup and History pages render cleanly in light mode. Landing page hero section retains a dark code-pattern background overlay in light mode which causes hero title text and CTA buttons (initiate_session, view_history) to appear washed out / barely readable.",
+  "tested_scope": ["frontend", "integration"],
+  "passed": [
+    "theme-toggle-btn exists and is clickable",
+    "Initial default theme is 'dark' (html class='dark', localStorage opsgrid_theme='dark')",
+    "Click toggle: html class becomes '' (no dark), localStorage='light'",
+    "Click toggle again: html class becomes 'dark' again",
+    "Theme persists across page reload (localStorage 'opsgrid_theme')",
+    "Toggle button label correctly shows opposite theme (Sun+'light' in dark mode, Moon+'dark' in light mode)",
+    "Setup page light mode renders cleanly (white bg, dark text, all topic cards, candidate_name input readable)",
+    "History page light mode renders cleanly (white bg rgb(250,250,250), table headers/rows fully readable, status badges visible)",
+    "Switching back to dark restores dark backgrounds and dark mode styling on History",
+    "No console errors detected"
+  ],
+  "failed": [
+    {
+      "area": "Landing page light mode readability (Landing.jsx hero section)",
+      "issue": "In light mode the hero section keeps a dark code-pattern background. Hero title 'Mock interviews for DevOps & DevSecOps that actually feel real.' renders in light/white-ish color over the dark overlay so contrast is poor; INITIATE_SESSION and VIEW_HISTORY CTAs appear semi-transparent over the dark code overlay and are hard to read. Compared with /setup and /history which switch to white bg as expected, Landing hero looks nearly identical in light and dark modes.",
+      "evidence": "Screenshot 02_landing_light.png shows hero with dark code overlay and light text while html class='' and localStorage='light'. body bg = rgb(250,250,250) but hero section above-the-fold remains dark.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "Landing CTA testids",
+      "issue": "data-testid 'initiate_session' and 'view_history' were not detected as visible by is_visible() (buttons render visually with text 'INITIATE_SESSION()' and 'VIEW_HISTORY' but possibly use different testid casing or are not exposed). Worth confirming testid attributes on Landing.jsx CTAs.",
+      "evidence": "playwright is_visible('[data-testid=\"initiate_session\"]') returned False and same for view_history, while nav-history-btn and nav-start-btn returned True.",
+      "priority": "LOW"
+    }
+  ],
+  "action_items": [
+    "Fix Landing.jsx hero section to use light-mode-aware background (e.g., remove/lighten the dark code overlay or invert it under light mode) so hero title and primary CTAs (initiate_session, view_history) are readable on white bg.",
+    "Ensure hero title text and CTA button colors use dark text (zinc-900) and solid green-600 fills in light mode for sufficient contrast.",
+    "Verify the data-testid values on the Landing CTAs match 'initiate_session' / 'view_history' exactly (lowercase, underscored)."
+  ],
+  "success_rate": {"backend": "skipped", "frontend": "85%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}

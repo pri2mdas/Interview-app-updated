@@ -65,25 +65,25 @@ export default function Setup() {
   };
 
   return (
-    <div className="min-h-screen relative z-10 bg-zinc-950">
+    <div className="min-h-screen relative z-10 bg-white dark:bg-zinc-950">
       <Nav />
 
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="mb-12">
-          <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-400 mb-3">// setup</div>
-          <h1 className="font-display font-black text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Configure session</h1>
-          <p className="font-mono-ui text-sm text-zinc-400 mt-3">Select your stack, difficulty, and mode. The interviewer will adapt.</p>
+          <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mb-3">// setup</div>
+          <h1 className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Configure session</h1>
+          <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 mt-3">Select your stack, difficulty, and mode. The interviewer will adapt.</p>
         </div>
 
         {/* Name */}
-        <section className="mb-10 border border-zinc-800 bg-zinc-900/40 p-8">
+        <section className="mb-10 border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/40 p-8">
           <label className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3 block">candidate_name</label>
           <input
             data-testid="setup-name-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="enter your name"
-            className="w-full bg-transparent border-b border-zinc-700 focus:border-green-500 outline-none font-mono-ui text-2xl text-zinc-50 py-3 placeholder:text-zinc-700 transition-colors"
+            className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-green-500 outline-none font-mono-ui text-2xl text-zinc-900 dark:text-zinc-50 py-3 placeholder:text-zinc-400 dark:text-zinc-700 transition-colors"
           />
         </section>
 
@@ -94,12 +94,12 @@ export default function Setup() {
             <button
               data-testid="setup-select-all-btn"
               onClick={() => setSelectedTopics(selectedTopics.length === topics.length ? [] : topics.map((t) => t.id))}
-              className="font-mono-ui text-[10px] tracking-[0.25em] uppercase text-zinc-400 hover:text-green-400 transition-colors"
+              className="font-mono-ui text-[10px] tracking-[0.25em] uppercase text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:text-green-400 transition-colors"
             >
               {selectedTopics.length === topics.length ? "clear_all" : "select_all"}
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px bg-zinc-800">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px bg-zinc-200 dark:bg-zinc-800">
             {topics.map((t) => {
               const Icon = ICONS[t.icon] || SiLinux;
               const active = selectedTopics.includes(t.id);
@@ -109,13 +109,13 @@ export default function Setup() {
                   data-testid={`topic-${t.id}`}
                   onClick={() => toggleTopic(t.id)}
                   className={`p-5 text-left transition-colors flex flex-col gap-3 ${
-                    active ? "bg-zinc-900 border border-green-500 -m-px" : "bg-zinc-950 hover:bg-zinc-900 border border-transparent -m-px"
+                    active ? "bg-zinc-100 dark:bg-zinc-900 border border-green-500 -m-px" : "bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:bg-zinc-900 border border-transparent -m-px"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${active ? "text-green-400" : "text-zinc-300"}`} />
+                  <Icon className={`w-6 h-6 ${active ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-700 dark:text-zinc-300"}`} />
                   <div>
-                    <div className={`font-mono-ui text-sm ${active ? "text-zinc-50" : "text-zinc-200"}`}>{t.name}</div>
-                    {active && <div className="font-mono-ui text-[9px] tracking-[0.3em] uppercase text-green-400 mt-2">selected</div>}
+                    <div className={`font-mono-ui text-sm ${active ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-800 dark:text-zinc-200"}`}>{t.name}</div>
+                    {active && <div className="font-mono-ui text-[9px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mt-2">selected</div>}
                   </div>
                 </button>
               );
@@ -124,8 +124,8 @@ export default function Setup() {
         </section>
 
         {/* Difficulty + Mode + Duration */}
-        <section className="grid md:grid-cols-3 gap-px bg-zinc-800 mb-10">
-          <div className="bg-zinc-950 p-6">
+        <section className="grid md:grid-cols-3 gap-px bg-zinc-200 dark:bg-zinc-800 mb-10">
+          <div className="bg-white dark:bg-zinc-950 p-6">
             <label className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-4 block">difficulty</label>
             <div className="flex flex-col gap-2">
               {DIFFICULTIES.map((d) => (
@@ -135,8 +135,8 @@ export default function Setup() {
                   onClick={() => setDifficulty(d.id)}
                   className={`text-left p-3 border transition-colors ${
                     difficulty === d.id
-                      ? "border-green-500 bg-zinc-900 text-zinc-50"
-                      : "border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
+                      ? "border-green-500 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:border-zinc-600 hover:text-zinc-800 dark:text-zinc-200"
                   }`}
                 >
                   <div className="font-mono-ui text-sm">{d.label}</div>
@@ -146,7 +146,7 @@ export default function Setup() {
             </div>
           </div>
 
-          <div className="bg-zinc-950 p-6">
+          <div className="bg-white dark:bg-zinc-950 p-6">
             <label className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-4 block">interaction_mode</label>
             <div className="flex flex-col gap-2">
               {[
@@ -159,8 +159,8 @@ export default function Setup() {
                   onClick={() => setMode(m.id)}
                   className={`text-left p-3 border transition-colors ${
                     mode === m.id
-                      ? "border-green-500 bg-zinc-900 text-zinc-50"
-                      : "border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
+                      ? "border-green-500 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50"
+                      : "border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:border-zinc-600 hover:text-zinc-800 dark:text-zinc-200"
                   }`}
                 >
                   <div className="font-mono-ui text-sm">{m.label}</div>
@@ -170,7 +170,7 @@ export default function Setup() {
             </div>
           </div>
 
-          <div className="bg-zinc-950 p-6">
+          <div className="bg-white dark:bg-zinc-950 p-6">
             <label className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-4 block">
               duration: {duration}_min
             </label>
@@ -195,7 +195,7 @@ export default function Setup() {
             data-testid="setup-start-btn"
             onClick={start}
             disabled={!canStart}
-            className="group font-mono-ui text-sm uppercase tracking-[0.2em] bg-green-500 text-zinc-950 hover:bg-green-400 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed px-7 py-4 rounded-sm font-bold transition-colors inline-flex items-center gap-3"
+            className="group font-mono-ui text-sm uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 disabled:bg-zinc-200 dark:bg-zinc-800 disabled:text-zinc-500 dark:text-zinc-600 disabled:cursor-not-allowed px-7 py-4 rounded-sm font-bold transition-colors inline-flex items-center gap-3"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
             {loading ? "spinning_up..." : "begin_interview()"}

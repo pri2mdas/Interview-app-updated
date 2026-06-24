@@ -201,34 +201,34 @@ export default function Interview() {
   const lowTime = secondsLeft < 600;
 
   return (
-    <div className="min-h-screen relative z-10 bg-zinc-950 flex flex-col">
+    <div className="min-h-screen relative z-10 bg-white dark:bg-zinc-950 flex flex-col">
       {/* Top bar */}
-      <header data-testid="interview-header" className="border-b border-zinc-800 bg-zinc-950">
+      <header data-testid="interview-header" className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
         <div className="mx-auto max-w-[1600px] px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-green-600 dark:bg-green-500 rounded-full animate-pulse" />
             <div>
               <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500">live_session</div>
-              <div className="font-mono-ui text-sm text-zinc-200">{session?.candidate_name || "..."} · {session?.difficulty}</div>
+              <div className="font-mono-ui text-sm text-zinc-800 dark:text-zinc-200">{session?.candidate_name || "..."} · {session?.difficulty}</div>
             </div>
           </div>
           <button
             data-testid="end-interview-btn"
             onClick={() => setEndDialog(true)}
             disabled={ending}
-            className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-700 text-zinc-300 hover:border-red-500 hover:text-red-400 px-4 py-2 rounded-sm transition-colors inline-flex items-center gap-2"
+            className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:text-red-400 px-4 py-2 rounded-sm transition-colors inline-flex items-center gap-2"
           >
             <StopCircle className="w-4 h-4" /> end_session
           </button>
         </div>
       </header>
 
-      <div className="flex-1 mx-auto max-w-[1600px] w-full px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-px bg-zinc-800">
+      <div className="flex-1 mx-auto max-w-[1600px] w-full px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-px bg-zinc-200 dark:bg-zinc-800">
         {/* LEFT: TERMINAL FEED */}
-        <div className="bg-zinc-950 flex flex-col min-h-[60vh]">
-          <div className="px-6 py-3 border-b border-zinc-800 font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 flex items-center justify-between">
+        <div className="bg-white dark:bg-zinc-950 flex flex-col min-h-[60vh]">
+          <div className="px-6 py-3 border-b border-zinc-200 dark:border-zinc-800 font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 flex items-center justify-between">
             <span>interview_stdout</span>
-            <span className="text-zinc-600">~/sessions/{sessionId.slice(0, 8)}</span>
+            <span className="text-zinc-500 dark:text-zinc-600">~/sessions/{sessionId.slice(0, 8)}</span>
           </div>
 
           <div ref={feedRef} data-testid="interview-feed" className="flex-1 overflow-y-auto px-6 py-6 font-mono-ui text-sm space-y-5">
@@ -237,28 +237,28 @@ export default function Interview() {
                 {m.role === "interviewer" ? (
                   <div data-testid={`msg-int-${i}`}>
                     <div className="text-zinc-500 text-xs mb-1">
-                      <span className="text-green-400">root@ai</span>
-                      <span className="text-zinc-600">:</span>
-                      <span className="text-blue-400">~</span>
-                      <span className="text-zinc-600">$ </span>
+                      <span className="text-green-600 dark:text-green-400">root@ai</span>
+                      <span className="text-zinc-500 dark:text-zinc-600">:</span>
+                      <span className="text-blue-600 dark:text-blue-400">~</span>
+                      <span className="text-zinc-500 dark:text-zinc-600">$ </span>
                       <span className="text-zinc-500">[{m.topic || "general"} / {m.question_type || "concept"}]</span>
                     </div>
-                    <div className="text-zinc-100 whitespace-pre-wrap pl-2 border-l border-zinc-800">{m.content}</div>
+                    <div className="text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
                   </div>
                 ) : (
                   <div data-testid={`msg-cand-${i}`}>
                     <div className="text-zinc-500 text-xs mb-1 flex items-center gap-2">
-                      <span className="text-amber-400">user@candidate</span>
-                      <span className="text-zinc-600">:</span>
-                      <span className="text-blue-400">~</span>
-                      <span className="text-zinc-600">$ </span>
+                      <span className="text-amber-600 dark:text-amber-400">user@candidate</span>
+                      <span className="text-zinc-500 dark:text-zinc-600">:</span>
+                      <span className="text-blue-600 dark:text-blue-400">~</span>
+                      <span className="text-zinc-500 dark:text-zinc-600">$ </span>
                       {m.score != null && (
                         <span className={`px-1.5 py-0.5 text-[10px] tracking-wider ${
-                          m.score >= 7 ? "text-green-400 bg-green-500/10" : m.score >= 4 ? "text-amber-400 bg-amber-500/10" : "text-red-400 bg-red-500/10"
+                          m.score >= 7 ? "text-green-600 dark:text-green-400 bg-green-600/15 dark:bg-green-500/10" : m.score >= 4 ? "text-amber-600 dark:text-amber-400 bg-amber-600/15 dark:bg-amber-500/10" : "text-red-600 dark:text-red-400 bg-red-600/15 dark:bg-red-500/10"
                         }`}>SCORE {m.score}/10</span>
                       )}
                     </div>
-                    <div className="text-zinc-300 whitespace-pre-wrap pl-2 border-l border-zinc-800">{m.content}</div>
+                    <div className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
                     {m.feedback && (
                       <div className="text-zinc-500 text-xs mt-1 pl-2 italic">// {m.feedback}</div>
                     )}
@@ -267,14 +267,14 @@ export default function Interview() {
               </div>
             ))}
             {submitting && (
-              <div data-testid="thinking" className="text-green-400 cursor-blink text-xs">root@ai:~$ thinking </div>
+              <div data-testid="thinking" className="text-green-600 dark:text-green-400 cursor-blink text-xs">root@ai:~$ thinking </div>
             )}
           </div>
 
           {/* INPUT */}
-          <div className="border-t border-zinc-800 p-4 bg-zinc-950">
+          <div className="border-t border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-950">
             <div className="flex items-start gap-3">
-              <div className="font-mono-ui text-amber-400 text-sm pt-3">$</div>
+              <div className="font-mono-ui text-amber-600 dark:text-amber-400 text-sm pt-3">$</div>
               <textarea
                 data-testid="answer-input"
                 value={answer}
@@ -285,7 +285,7 @@ export default function Interview() {
                 placeholder={transcribing ? "transcribing..." : "type your answer  (cmd/ctrl + enter to send)"}
                 rows={3}
                 disabled={submitting || ending || transcribing}
-                className="flex-1 bg-transparent border border-zinc-800 focus:border-green-500 outline-none px-3 py-2 font-mono-ui text-sm text-zinc-100 placeholder:text-zinc-600 resize-none transition-colors"
+                className="flex-1 bg-transparent border border-zinc-200 dark:border-zinc-800 focus:border-green-500 outline-none px-3 py-2 font-mono-ui text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:text-zinc-600 resize-none transition-colors"
               />
               <div className="flex flex-col gap-2">
                 <button
@@ -294,8 +294,8 @@ export default function Interview() {
                   disabled={submitting || ending || transcribing}
                   className={`px-3 py-2 border rounded-sm transition-colors ${
                     recording
-                      ? "border-red-500 text-red-400 animate-pulse"
-                      : "border-zinc-700 text-zinc-400 hover:border-green-500 hover:text-green-400"
+                      ? "border-red-500 text-red-600 dark:text-red-400 animate-pulse"
+                      : "border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 hover:border-green-600 dark:hover:border-green-500 hover:text-green-600 dark:text-green-400"
                   } disabled:opacity-40`}
                   title={recording ? "Stop recording" : "Record"}
                 >
@@ -305,7 +305,7 @@ export default function Interview() {
                   data-testid="send-answer-btn"
                   onClick={send}
                   disabled={!answer.trim() || submitting || ending}
-                  className="px-3 py-2 bg-green-500 text-zinc-950 hover:bg-green-400 disabled:bg-zinc-800 disabled:text-zinc-600 rounded-sm font-bold transition-colors"
+                  className="px-3 py-2 bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 disabled:bg-zinc-200 dark:bg-zinc-800 disabled:text-zinc-500 dark:text-zinc-600 rounded-sm font-bold transition-colors"
                   title="Send (Cmd/Ctrl+Enter)"
                 >
                   {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
@@ -316,12 +316,12 @@ export default function Interview() {
         </div>
 
         {/* RIGHT: COMMAND CENTER */}
-        <aside className="bg-zinc-950 flex flex-col">
-          <div className="border-b border-zinc-800 p-6">
+        <aside className="bg-white dark:bg-zinc-950 flex flex-col">
+          <div className="border-b border-zinc-200 dark:border-zinc-800 p-6">
             <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">time_remaining</div>
             <div
               data-testid="timer"
-              className={`font-mono-ui font-bold text-5xl tracking-tighter ${lowTime ? "text-red-500 glow-red" : "text-green-400 glow-green"}`}
+              className={`font-mono-ui font-bold text-5xl tracking-tighter ${lowTime ? "text-red-500 glow-red" : "text-green-600 dark:text-green-400 glow-green"}`}
             >
               {formatTime(secondsLeft)}
             </div>
@@ -330,33 +330,33 @@ export default function Interview() {
             </div>
           </div>
 
-          <div className="border-b border-zinc-800 p-6">
+          <div className="border-b border-zinc-200 dark:border-zinc-800 p-6">
             <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">avg_score</div>
             <div className="flex items-baseline gap-2">
-              <div data-testid="avg-score" className="font-mono-ui font-bold text-4xl text-zinc-50">{score.running_avg.toFixed(1)}</div>
+              <div data-testid="avg-score" className="font-mono-ui font-bold text-4xl text-zinc-900 dark:text-zinc-50">{score.running_avg.toFixed(1)}</div>
               <div className="font-mono-ui text-sm text-zinc-500">/ 10</div>
             </div>
-            <div className="mt-3 h-1 bg-zinc-800 rounded-sm overflow-hidden">
+            <div className="mt-3 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-sm overflow-hidden">
               <div
-                className={`h-full transition-all ${score.running_avg >= 7 ? "bg-green-500" : score.running_avg >= 4 ? "bg-amber-500" : "bg-red-500"}`}
+                className={`h-full transition-all ${score.running_avg >= 7 ? "bg-green-600 dark:bg-green-500" : score.running_avg >= 4 ? "bg-amber-600 dark:bg-amber-500" : "bg-red-600 dark:bg-red-500"}`}
                 style={{ width: `${(score.running_avg / 10) * 100}%` }}
               />
             </div>
             <div className="font-mono-ui text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-2">
-              answered: <span className="text-zinc-300">{score.total_answered}</span>
+              answered: <span className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-300">{score.total_answered}</span>
             </div>
           </div>
 
-          <div className="border-b border-zinc-800 p-6">
+          <div className="border-b border-zinc-200 dark:border-zinc-800 p-6">
             <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">current_question</div>
             {currentQuestion && (
               <div>
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  <span className="font-mono-ui text-[10px] uppercase tracking-[0.2em] bg-green-500/10 text-green-400 px-2 py-1">Q{currentQuestion.number}</span>
-                  <span className="font-mono-ui text-[10px] uppercase tracking-[0.2em] border border-zinc-700 text-zinc-400 px-2 py-1">{currentQuestion.topic}</span>
-                  <span className="font-mono-ui text-[10px] uppercase tracking-[0.2em] border border-zinc-700 text-zinc-400 px-2 py-1">{currentQuestion.question_type}</span>
+                  <span className="font-mono-ui text-[10px] uppercase tracking-[0.2em] bg-green-600/15 dark:bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-1">Q{currentQuestion.number}</span>
+                  <span className="font-mono-ui text-[10px] uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 px-2 py-1">{currentQuestion.topic}</span>
+                  <span className="font-mono-ui text-[10px] uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 px-2 py-1">{currentQuestion.question_type}</span>
                 </div>
-                <div data-testid="current-question" className="font-mono-ui text-sm text-zinc-200 leading-relaxed">{currentQuestion.content}</div>
+                <div data-testid="current-question" className="font-mono-ui text-sm text-zinc-800 dark:text-zinc-200 leading-relaxed">{currentQuestion.content}</div>
               </div>
             )}
           </div>
@@ -365,7 +365,7 @@ export default function Interview() {
             <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">topics</div>
             <div className="flex flex-wrap gap-2">
               {session?.topics?.map((t) => (
-                <span key={t} className="font-mono-ui text-[10px] uppercase tracking-[0.15em] border border-zinc-800 text-zinc-400 px-2 py-1">{t}</span>
+                <span key={t} className="font-mono-ui text-[10px] uppercase tracking-[0.15em] border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 px-2 py-1">{t}</span>
               ))}
             </div>
           </div>
@@ -373,10 +373,10 @@ export default function Interview() {
       </div>
 
       <Dialog open={endDialog} onOpenChange={setEndDialog}>
-        <DialogContent className="bg-zinc-950 border border-zinc-800 text-zinc-100 rounded-sm">
+        <DialogContent className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-sm">
           <DialogHeader>
-            <DialogTitle className="font-display font-bold flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-400" /> end_session?</DialogTitle>
-            <DialogDescription className="font-mono-ui text-zinc-400 text-sm">
+            <DialogTitle className="font-display font-bold flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" /> end_session?</DialogTitle>
+            <DialogDescription className="font-mono-ui text-zinc-500 dark:text-zinc-600 dark:text-zinc-400 text-sm">
               This will close the interview and generate the final report. You cannot resume the session.
             </DialogDescription>
           </DialogHeader>
@@ -384,7 +384,7 @@ export default function Interview() {
             <button
               data-testid="end-cancel-btn"
               onClick={() => setEndDialog(false)}
-              className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-700 text-zinc-300 hover:text-zinc-50 px-4 py-2 rounded-sm transition-colors"
+              className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:text-zinc-50 px-4 py-2 rounded-sm transition-colors"
             >
               cancel
             </button>
@@ -392,7 +392,7 @@ export default function Interview() {
               data-testid="end-confirm-btn"
               onClick={() => { setEndDialog(false); finalize(false); }}
               disabled={ending}
-              className="font-mono-ui text-xs uppercase tracking-[0.2em] bg-red-500 text-zinc-950 hover:bg-red-400 px-4 py-2 rounded-sm font-bold transition-colors inline-flex items-center gap-2"
+              className="font-mono-ui text-xs uppercase tracking-[0.2em] bg-red-600 dark:bg-red-500 text-zinc-950 hover:bg-red-500 dark:hover:bg-red-400 px-4 py-2 rounded-sm font-bold transition-colors inline-flex items-center gap-2"
             >
               {ending ? <Loader2 className="w-4 h-4 animate-spin" /> : <StopCircle className="w-4 h-4" />}
               end_and_generate

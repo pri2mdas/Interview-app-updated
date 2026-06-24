@@ -5,9 +5,14 @@
 @tailwind utilities;
 
 html, body, #root {
+    min-height: 100%;
+    background-color: #fafafa;
+    color: #18181b;
+}
+
+html.dark, html.dark body, html.dark #root {
     background-color: #09090b;
     color: #fafafa;
-    min-height: 100%;
 }
 
 body {
@@ -17,19 +22,16 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.font-display {
-    font-family: 'Outfit', sans-serif;
-}
-
-.font-mono-ui {
-    font-family: 'JetBrains Mono', monospace;
-}
+.font-display { font-family: 'Outfit', sans-serif; }
+.font-mono-ui { font-family: 'JetBrains Mono', monospace; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #09090b; }
-::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+html.dark ::-webkit-scrollbar-thumb { background: #27272a; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
 
 /* Grain overlay */
 .grain::before {
@@ -37,35 +39,64 @@ body {
     position: fixed; inset: 0;
     pointer-events: none;
     background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    opacity: 0.35;
+    opacity: 0.20;
     z-index: 1;
     mix-blend-mode: overlay;
 }
+html.dark .grain::before { opacity: 0.35; }
 
 /* Blinking terminal cursor */
 .cursor-blink::after {
     content: "_";
-    color: #4ade80;
+    color: #16a34a;
     animation: blink 1s steps(2) infinite;
 }
-@keyframes blink {
-    50% { opacity: 0; }
-}
+html.dark .cursor-blink::after { color: #4ade80; }
+@keyframes blink { 50% { opacity: 0; } }
 
-/* Glow on active timer */
-.glow-green { text-shadow: 0 0 14px rgba(74, 222, 128, 0.55); }
-.glow-red { text-shadow: 0 0 14px rgba(239, 68, 68, 0.65); }
+/* Glow */
+.glow-green { text-shadow: 0 0 14px rgba(22, 163, 74, 0.45); }
+.glow-red { text-shadow: 0 0 14px rgba(220, 38, 38, 0.55); }
+html.dark .glow-green { text-shadow: 0 0 14px rgba(74, 222, 128, 0.55); }
+html.dark .glow-red { text-shadow: 0 0 14px rgba(239, 68, 68, 0.65); }
 
-/* Subtle animated grid background */
+/* Grid */
 .bg-grid {
+    background-image:
+        linear-gradient(rgba(161,161,170,0.22) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(161,161,170,0.22) 1px, transparent 1px);
+    background-size: 48px 48px;
+}
+html.dark .bg-grid {
     background-image:
         linear-gradient(rgba(63,63,70,0.18) 1px, transparent 1px),
         linear-gradient(90deg, rgba(63,63,70,0.18) 1px, transparent 1px);
-    background-size: 48px 48px;
 }
 
 @layer base {
     :root {
+        --background: 0 0% 98%;
+        --foreground: 240 10% 10%;
+        --card: 0 0% 100%;
+        --card-foreground: 240 10% 10%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 240 10% 10%;
+        --primary: 142 76% 36%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 240 5% 96%;
+        --secondary-foreground: 240 10% 10%;
+        --muted: 240 5% 96%;
+        --muted-foreground: 240 4% 40%;
+        --accent: 240 5% 96%;
+        --accent-foreground: 240 10% 10%;
+        --destructive: 0 84% 50%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 240 6% 88%;
+        --input: 240 6% 90%;
+        --ring: 142 76% 36%;
+        --radius: 0.25rem;
+    }
+    html.dark {
         --background: 240 10% 3.9%;
         --foreground: 0 0% 98%;
         --card: 240 10% 3.9%;
@@ -85,7 +116,6 @@ body {
         --border: 240 3.7% 18%;
         --input: 240 3.7% 15.9%;
         --ring: 142 71% 45%;
-        --radius: 0.25rem;
     }
 }
 
@@ -94,12 +124,11 @@ body {
     body { @apply bg-background text-foreground; }
 }
 
-/* fade in */
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
 }
 .fade-up { animation: fadeUp 0.5s ease-out both; }
 
-/* Selection */
-::selection { background: rgba(74, 222, 128, 0.3); color: #fafafa; }
+::selection { background: rgba(22, 163, 74, 0.25); color: #18181b; }
+html.dark ::selection { background: rgba(74, 222, 128, 0.3); color: #fafafa; }
