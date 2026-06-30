@@ -16,8 +16,8 @@ export default function Nav({ minimal = false }) {
             <Terminal className="w-5 h-5" strokeWidth={2.5} />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="font-display font-black text-zinc-900 dark:text-zinc-50 text-base tracking-tight">OPSGRID</span>
-            <span className="font-mono-ui text-[10px] tracking-[0.25em] text-zinc-700 dark:text-zinc-200 uppercase">mock_interview.sh</span>
+            <span className="font-display font-black text-zinc-900 dark:text-zinc-50 text-base tracking-tight">TAKE MY INTERVIEW</span>
+            <span className="font-mono-ui text-[10px] tracking-[0.25em] text-zinc-700 dark:text-zinc-200 uppercase">mock interview portal</span>
           </div>
         </Link>
 

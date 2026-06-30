@@ -133,7 +133,7 @@ export default function Landing() {
           </div>
           <div className="flex flex-col gap-4">
             <div className="border border-zinc-200 dark:border-zinc-800 p-6 bg-zinc-100 dark:bg-zinc-900/50">
-              <div className="font-mono-ui text-xs text-zinc-500 mb-2">$ ./opsgrid --start</div>
+              <div className="font-mono-ui text-xs text-zinc-500 mb-2">$ ./tmi --start</div>
               <div className="font-mono-ui text-sm text-green-600 dark:text-green-400 cursor-blink">connecting to interviewer </div>
             </div>
             <button
@@ -149,8 +149,8 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-8 mx-auto max-w-7xl px-6 flex justify-between items-center">
-        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-300">© opsgrid.sh — built for engineers</div>
-        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-300">claude_sonnet_4.5 / whisper-1</div>
+        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-300">© TakeMyInterview — built for aspiring Devops engineers</div>
+        <div className="font-mono-ui text-xs text-zinc-700 dark:text-zinc-300">Devloped by Pritam Das</div>
       </footer>
     </div>
   );

@@ -5,7 +5,6 @@ import os
 import logging
 import json
 import re
-import httpx
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
@@ -21,9 +20,16 @@ load_dotenv(ROOT_DIR / '.env')
 interviews_db: dict = {}
 # ─────────────────────────────────────────────────────────────────────────────
 
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
-MODEL_NAME = "gemini-3.1-flash-lite"
+FEATHERLESS_API_KEY = os.environ["FEATHERLESS_API_KEY"]
+MODEL_NAME = os.getenv(
+    "FEATHERLESS_MODEL",
+    "moonshotai/Kimi-K2.7-Code"
+)
 
+client = AsyncOpenAI(
+    api_key=FEATHERLESS_API_KEY,
+    base_url="https://api.featherless.ai/v1",
+)
 
 app = FastAPI(title="DevOps Mock Interview Platform")
 api_router = APIRouter(prefix="/api")
@@ -160,43 +166,24 @@ def extract_json(text: str) -> dict:
 
 async def call_interviewer(session_id: str, system_prompt: str, user_text: str) -> dict:
 
-    payload = {
-        "contents": [
+    response = await client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
             {
-                "parts": [
-                    {
-                        "text": f"{system_prompt}\n\n{user_text}"
-                    }
-                ]
-            }
-        ]
-    }
-
-    async with httpx.AsyncClient(timeout=120) as client:
-        response = await client.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent",
-            headers={
-                "Content-Type": "application/json",
-                "X-goog-api-key": GEMINI_API_KEY,
+                "role": "system",
+                "content": system_prompt,
             },
-            json=payload,
-        )
+            {
+                "role": "user",
+                "content": user_text,
+            },
+        ],
+        temperature=0.8,
+    )
 
-    response.raise_for_status()
+    return extract_json(response.choices[0].message.content)
 
-    result = response.json()
-
-    text = result["candidates"][0]["content"]["parts"][0]["text"]
-
-    return extract_json(text)
-
-
-async def call_reporter(
-    session_id: str,
-    transcript: str,
-    topics: List[str],
-    difficulty: str,
-) -> dict:
+async def call_reporter(session_id: str, transcript: str, topics: List[str], difficulty: str) -> dict:
 
     user_text = (
         f"Topics: {', '.join(topics)}\n"
@@ -205,36 +192,22 @@ async def call_reporter(
         "Generate the report."
     )
 
-    payload = {
-        "contents": [
+    response = await client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
             {
-                "parts": [
-                    {
-                        "text": f"{build_report_prompt()}\n\n{user_text}"
-                    }
-                ]
-            }
-        ]
-    }
-
-    async with httpx.AsyncClient(timeout=120) as client:
-        response = await client.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent",
-            headers={
-                "Content-Type": "application/json",
-                "X-goog-api-key": GEMINI_API_KEY,
+                "role": "system",
+                "content": build_report_prompt(),
             },
-            json=payload,
-        )
+            {
+                "role": "user",
+                "content": user_text,
+            },
+        ],
+        temperature=0.3,
+    )
 
-    response.raise_for_status()
-
-    result = response.json()
-
-    text = result["candidates"][0]["content"]["parts"][0]["text"]
-
-    return extract_json(text)
-
+    return extract_json(response.choices[0].message.content)
 
 def messages_to_transcript(messages: List[dict]) -> str:
     lines = []
