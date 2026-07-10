@@ -1,0 +1,189 @@
+# =============================================================================
+# NetworkPolicies — defence-in-depth. Default-deny in the namespace, then
+# allow the specific flows we need.
+#
+# Requires a CNI that enforces NetworkPolicy (Calico, Cilium, Weave, etc.).
+# On a cluster without it, these are no-ops and traffic flows freely.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: tmi
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: tmi
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # kube-dns / CoreDNS — every pod needs this for service discovery.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres
+  namespace: tmi
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+      app.kubernetes.io/part-of: take-my-interview
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only the backend may open a connection to postgres:5432.
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend
+              app.kubernetes.io/part-of: take-my-interview
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend
+  namespace: tmi
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/part-of: take-my-interview
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # From the frontend (proxies /api/* from the browser).
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: frontend
+              app.kubernetes.io/part-of: take-my-interview
+      ports:
+        - protocol: TCP
+          port: 7000
+    # From the ingress controller (direct /api calls if you bypass the frontend).
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 7000
+    # Prometheus / kubelet probes if you scrape the pod.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 7000
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgres
+              app.kubernetes.io/part-of: take-my-interview
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Outbound HTTPS for the Gemini API call (Google).
+    - to:
+        - ipBlock:
+            cidr: "[REDACTED-IP_ADDRESS]/0"
+            except:
+              - "[REDACTED-IP_ADDRESS]/8"
+              - "[REDACTED-IP_ADDRESS]/12"
+              - "[REDACTED-IP_ADDRESS]/16"
+      ports:
+        - protocol: TCP
+          port: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend
+  namespace: tmi
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+      app.kubernetes.io/part-of: take-my-interview
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # To the backend for /api/* proxying.
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend
+              app.kubernetes.io/part-of: take-my-interview
+      ports:
+        - protocol: TCP
+          port: 7000

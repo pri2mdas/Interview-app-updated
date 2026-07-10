@@ -1,0 +1,24 @@
+# =============================================================================
+# Backend non-secret configuration. Wired in via envFrom in the Deployment.
+# Anything sensitive lives in 21-backend-secret.yaml.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: take-my-interview
+data:
+  HOST: [REDACTED-IP_ADDRESS]
+  PORT: "7000"
+  # Comma-separated list. Replace with your real frontend origin(s).
+  CORS_ORIGINS: "[REDACTED-URL]"
+  # Connection-pool ceiling passed through to psycopg2.
+  DB_POOL_MAX: "10"
+  # Python log level (uvicorn + stdlib logging).
+  LOG_LEVEL: "INFO"
+  # Disable uvicorn reload in the container — we run with multiple workers
+  # in the Pod spec instead.
+  PYTHONUNBUFFERED: "1"

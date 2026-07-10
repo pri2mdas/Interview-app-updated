@@ -26,13 +26,22 @@ export default function Report() {
     async function load() {
       try {
         let s = await getInterview(sessionId);
-        if (s.status !== "completed" || !s.final_report) {
-          await endInterview(sessionId);
+        let report = s.final_report;
+        // Defensive: Postgres stores final_report as a JSON string in some paths.
+        if (typeof report === "string") {
+          try { report = JSON.parse(report); } catch { report = null; }
+        }
+        if (s.status !== "completed" || !report) {
+          const ended = await endInterview(sessionId);
+          report = ended.report;
+          if (typeof report === "string") {
+            try { report = JSON.parse(report); } catch { report = null; }
+          }
           s = await getInterview(sessionId);
         }
         if (cancelled) return;
         setSession(s);
-        setReport(s.final_report);
+        setReport(report);
       } catch (e) {
         toast.error("Failed to load report");
       } finally {
@@ -73,7 +82,7 @@ export default function Report() {
             <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mb-3">// session_complete</div>
             <h1 className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Feedback Report</h1>
             <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 mt-2">
-              {session?.candidate_name} · {session?.difficulty} · {(session?.topics || []).join(", ")}
+              {session?.candidate_name} · {session?.difficulty} · {typeof session?.topics === "string" ? session.topics : (session?.topics || []).join(", ")}
             </p>
           </div>
           <div className="flex gap-3">

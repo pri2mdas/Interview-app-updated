@@ -1,0 +1,137 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Take My Interview — docker-compose
+#
+# Three services:
+#   - postgres   PostgreSQL 16 on internal port 5432 with a named volume
+#   - backend    FastAPI on internal port 7000 (Postgres + Gemini)
+#   - frontend   Static React bundle served by nginx on host port 8080
+#                nginx reverse-proxies /api/* → backend:7000
+#
+# Usage:
+#   1. Make sure backend/.env exists with GEMINI_API_KEY + TMI_JWT_SECRET set.
+#      (See backend/.env.example style — never commit real keys.)
+#   2. docker compose build
+#   3. docker compose up -d
+#   4. Open [REDACTED-URL]
+#
+# Override the frontend's baked-in API URL by setting REACT_APP_BACKEND_URL in
+# your shell before `docker compose build`, or by editing this file.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: take-my-interview
+
+services:
+  # ── Postgres ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: tmi-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: tmi
+      POSTGRES_USER: tmi
+      POSTGRES_PASSWORD: tmi
+
+    volumes:
+      - tmi-postgres-data:/var/lib/postgresql/data
+
+    # Internal-only — reached via the docker network from the backend.
+    expose:
+      - "5432"
+
+    networks:
+      - tmi-net
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tmi -d tmi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Backend ────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: take-my-interview/backend:latest
+    container_name: tmi-backend
+    restart: unless-stopped
+
+    # Load secrets / config from the on-disk .env file. NEVER commit that file.
+    env_file:
+      - ./backend/.env
+
+    # CORS + DATABASE_URL. The latter is hard-overridden here so local dev
+    # always points at the in-compose postgres, regardless of what .env says.
+    environment:
+      CORS_ORIGINS: ${CORS_ORIGINS:-[REDACTED-URL]}
+      DATABASE_URL: "postgresql://tmi:tmi@postgres:5432/tmi"
+      HOST: "[REDACTED-IP_ADDRESS]"
+      PORT: 7000
+
+    # Internal-only — the frontend nginx reaches us via the docker network.
+    # Uncomment the next line if you want to hit the API directly (e.g. curl
+    # from the host) without going through nginx.
+    # ports:
+    #   - "7000:7000"
+
+    expose:
+      - "7000"
+
+    networks:
+      - tmi-net
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://0.0.0.0:7000/docs', timeout=3).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # This is baked into the JS bundle at build time — it must be the URL
+        # the BROWSER uses to reach the API. Default assumes you visit the app
+        # on [REDACTED-URL] (the `ports:` mapping below). Override for
+        # production (e.g. [REDACTED-URL]
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-}
+    image: take-my-interview/frontend:latest
+    container_name: tmi-frontend
+    restart: unless-stopped
+
+    ports:
+      - "${FRONTEND_PORT:-8000}:80"
+
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    networks:
+      - tmi-net
+
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q ':0050 00000000:0000 0A ' /proc/net/tcp || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tmi-net:
+    driver: bridge
+
+volumes:
+  tmi-postgres-data:
+    driver: local

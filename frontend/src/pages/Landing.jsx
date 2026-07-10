@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowUpRight, Cpu, Shield, GitBranch, Activity, Clock, Brain } from "lucide-react";
+import { ArrowUpRight, Cpu, Shield, GitBranch, Activity, Clock, Brain, LogIn } from "lucide-react";
 import Nav from "@/components/Nav";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
 const HERO_BG = "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA0MTJ8MHwxfHNlYXJjaHwyfHxjb2RlJTIwbmV0d29yayUyMG1hdHJpeCUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc4MjE0OTM2OHww&ixlib=rb-4.1.0&q=85";
 
@@ -15,6 +17,25 @@ const FEATURES = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStart = () => {
+    if (!user) {
+      toast.message("Sign in to start a session", { description: "Your interview history is saved per account." });
+      navigate("/login", { state: { from: "/setup" } });
+      return;
+    }
+    navigate("/setup");
+  };
+
+  const handleViewHistory = () => {
+    if (!user) {
+      toast.message("Sign in to view history", { description: "Past sessions are tied to your account." });
+      navigate("/login", { state: { from: "/history" } });
+      return;
+    }
+    navigate("/history");
+  };
 
   return (
     <div className="min-h-screen relative z-10 bg-white dark:bg-zinc-950">
@@ -57,15 +78,15 @@ export default function Landing() {
             <div className="mt-12 flex flex-wrap items-center gap-4 fade-up" style={{ animationDelay: "0.25s" }}>
               <button
                 data-testid="hero-cta-start"
-                onClick={() => navigate("/setup")}
+                onClick={handleStart}
                 className="group font-mono-ui text-sm uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 px-7 py-4 rounded-sm font-bold transition-colors inline-flex items-center gap-3"
               >
-                initiate_session()
+                {user ? "initiate_session()" : (<><LogIn className="w-4 h-4" /> login_to_start()</>)}
                 <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </button>
               <button
                 data-testid="hero-cta-history"
-                onClick={() => navigate("/history")}
+                onClick={handleViewHistory}
                 className="font-mono-ui text-sm uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 hover:border-green-600 dark:hover:border-green-500 hover:text-green-600 dark:text-green-400 px-7 py-4 rounded-sm transition-colors"
               >
                 view_history
@@ -138,10 +159,10 @@ export default function Landing() {
             </div>
             <button
               data-testid="cta-bottom-start"
-              onClick={() => navigate("/setup")}
+              onClick={handleStart}
               className="font-mono-ui text-sm uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 px-7 py-4 rounded-sm font-bold transition-colors inline-flex items-center justify-center gap-3 w-full sm:w-auto"
             >
-              initiate_session()
+              {user ? "initiate_session()" : "login_to_start()"}
               <ArrowUpRight className="w-4 h-4" />
             </button>
           </div>

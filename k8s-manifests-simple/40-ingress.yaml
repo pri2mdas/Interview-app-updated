@@ -1,0 +1,56 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AWS Application Load Balancer Ingress.
+#
+# Prereqs:
+#   1. Install the AWS Load Balancer Controller:
+#        [REDACTED-URL]
+#   2. Provision an ACM certificate for your domain and copy its ARN.
+#   3. Cluster nodes must have IAM permission to describe/create the ALB
+#      (see the controller docs for the IAM policy).
+#
+# How it works:
+#   * The controller watches for Ingress resources with `ingressClassName: alb`
+#     and creates an ALB that fronts them.
+#   * `target-type: ip` requires the AWS VPC CNI (default on EKS) so each pod
+#     gets a real pod IP and the ALB targets pods directly — no NodePort hop.
+#   * `certificate-arn` attaches the ACM cert to HTTPS listener 443.
+#   * `ssl-redirect: '443'` forces HTTP → HTTPS upgrade.
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: take-my-interview
+  namespace: tmi
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:REGION:ACCOUNT_ID:certificate/CERTIFICATE_ID
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    # WAF v2 association (optional — remove if you don't have a WAF).
+    # alb.ingress.kubernetes.io/wafv2-acl-arn: arn:aws:wafv2:REGION:ACCOUNT_ID:regional/webacl/Name/GUID
+spec:
+  ingressClassName: alb
+  rules:
+    - host: take-my-interview.example.com
+      http:
+        paths:
+          # API traffic → backend FastAPI pods.
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 7000
+          # Everything else → frontend nginx pods.
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

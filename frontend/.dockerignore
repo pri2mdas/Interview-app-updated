@@ -1,0 +1,63 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Frontend .dockerignore — exclude everything that isn't needed to build the
+# production bundle. The image does its own `npm ci` so node_modules is rebuilt
+# inside the build stage and never needs to be sent over.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Dependencies — re-installed by `npm ci` in the build stage
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build output — regenerated during `npm run build`
+build/
+dist/
+.cache/
+.parcel-cache/
+.next/
+out/
+
+# Local env files — only the Dockerfile's build arg matters at build time
+.env
+.env.*
+!.env.example
+
+# Tests / coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# VCS / IDE
+.git/
+.gitignore
+.gitattributes
+.github/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Editor / OS noise
+.eslintcache
+.stylelintcache
+.history/
+
+# Project-level noise
+README.md
+*.md
+.mlem/
+.mcp_config*
+test_reports/
+memory/
+plugins/   # only used by the local craco dev pipeline, not the build

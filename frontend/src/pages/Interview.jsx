@@ -28,6 +28,7 @@ export default function Interview() {
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [endDialog, setEndDialog] = useState(false);
+  const [closingReport, setClosingReport] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
@@ -72,9 +73,8 @@ export default function Interview() {
         const elapsed = Math.floor((Date.now() - start) / 1000);
         setSecondsLeft(Math.max(0, total - elapsed));
 
-        if (loaded.status === "completed") {
-          navigate(`/report/${sessionId}`);
-        }
+        // Allow completed sessions to render here so the browser back button works.
+        // Report.jsx handles the report view when explicitly navigated to.
       } catch (e) {
         toast.error("Could not load session");
       }
@@ -86,7 +86,7 @@ export default function Interview() {
 
   // Tick timer
   useEffect(() => {
-    if (!session) return;
+    if (!session || closingReport) return;
     const id = setInterval(() => {
       setSecondsLeft((s) => {
         if (s <= 1 && !endRef.current) {
@@ -100,7 +100,7 @@ export default function Interview() {
     }, 1000);
     return () => clearInterval(id);
     // eslint-disable-next-line
-  }, [session]);
+  }, [session, closingReport]);
 
   // Auto-scroll feed
   useEffect(() => {
@@ -151,14 +151,16 @@ export default function Interview() {
   const finalize = async (auto = false) => {
     if (ending) return;
     setEnding(true);
+    setClosingReport(true);
     try {
       if (auto) toast.info("Time's up — generating report");
-      else toast.info("Wrapping up — generating report");
+      else toast.info("Closing and generating report");
       await endInterview(sessionId);
       navigate(`/report/${sessionId}`);
     } catch (e) {
       toast.error(e?.response?.data?.detail || "Failed to generate report");
       setEnding(false);
+      setClosingReport(false);
     }
   };
 
@@ -216,7 +218,7 @@ export default function Interview() {
             data-testid="end-interview-btn"
             onClick={() => setEndDialog(true)}
             disabled={ending}
-            className="font-mono-ui text-xs uppercase tracking-[0.2em] border border-zinc-300 dark:border-zinc-700 text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 hover:border-red-600 dark:hover:border-red-500 hover:text-red-600 dark:text-red-400 px-4 py-2 rounded-sm transition-colors inline-flex items-center gap-2"
+            className="font-mono-ui text-xs uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-700 dark:disabled:text-zinc-300 px-4 py-2 rounded-sm transition-colors inline-flex items-center gap-2 font-bold"
           >
             <StopCircle className="w-4 h-4" /> end_session
           </button>
@@ -258,7 +260,7 @@ export default function Interview() {
                         }`}>SCORE {m.score}/10</span>
                       )}
                     </div>
-                    <div className="text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 whitespace-pre-wrap pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
+                    <div className="text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap pl-2 border-l border-zinc-200 dark:border-zinc-800">{m.content}</div>
                     {m.feedback && (
                       <div className="text-zinc-500 text-xs mt-1 pl-2 italic">// {m.feedback}</div>
                     )}
@@ -364,7 +366,10 @@ export default function Interview() {
           <div className="p-6">
             <div className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500 mb-3">topics</div>
             <div className="flex flex-wrap gap-2">
-              {session?.topics?.map((t) => (
+              {(typeof session?.topics === "string"
+                ? session.topics.split(",")
+                : session?.topics || []
+              ).map((t) => (
                 <span key={t} className="font-mono-ui text-[10px] uppercase tracking-[0.15em] border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 px-2 py-1">{t}</span>
               ))}
             </div>
@@ -392,12 +397,42 @@ export default function Interview() {
               data-testid="end-confirm-btn"
               onClick={() => { setEndDialog(false); finalize(false); }}
               disabled={ending}
-              className="font-mono-ui text-xs uppercase tracking-[0.2em] bg-red-600 dark:bg-red-500 text-zinc-950 hover:bg-red-500 dark:hover:bg-red-400 px-4 py-2 rounded-sm font-bold transition-colors inline-flex items-center gap-2"
+              className="font-mono-ui text-xs uppercase tracking-[0.2em] bg-green-600 dark:bg-green-500 text-zinc-950 hover:bg-green-500 dark:hover:bg-green-400 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-700 dark:disabled:text-zinc-300 px-4 py-2 rounded-sm font-bold transition-colors inline-flex items-center gap-2"
             >
               {ending ? <Loader2 className="w-4 h-4 animate-spin" /> : <StopCircle className="w-4 h-4" />}
               end_and_generate
             </button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Closing / generating report — non-dismissable overlay shown until navigation completes */}
+      <Dialog open={closingReport}>
+        <DialogContent
+          data-testid="closing-report-dialog"
+          className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-sm sm:max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+          hideClose
+        >
+          <div className="flex flex-col items-center justify-center gap-5 py-6" data-testid="closing-report-content">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-green-500/20 blur-xl animate-pulse" aria-hidden />
+              <div className="relative w-16 h-16 rounded-full border-2 border-green-600 dark:border-green-500 border-t-transparent animate-spin" aria-hidden />
+              <Loader2 className="absolute inset-0 m-auto w-7 h-7 text-green-600 dark:text-green-400 animate-spin" />
+            </div>
+            <div className="text-center space-y-2">
+              <div className="font-display font-bold text-xl text-zinc-900 dark:text-zinc-50">Closing session</div>
+              <div className="font-mono-ui text-sm text-zinc-600 dark:text-zinc-300">
+                Closing and generating report
+                <span className="cursor-blink ml-0.5" />
+              </div>
+            </div>
+            <div className="font-mono-ui text-[10px] uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-500">
+              // please wait, do not close this window
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

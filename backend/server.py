@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
@@ -12,14 +12,19 @@ from typing import List, Optional, Literal
 import uuid
 from datetime import datetime, timezone
 
-from openai import AsyncOpenAI
+from database import init_db, cursor, get_user_by_email, get_user_by_username
+from auth import (
+    RegisterRequest, LoginRequest, UserPublic,
+    hash_password, verify_password, create_access_token,
+    get_current_user, get_optional_user, user_to_public,
+)
+import database
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# ── In-memory store — no MongoDB / no extra install needed ────────────────────
-interviews_db: dict = {}
-# ─────────────────────────────────────────────────────────────────────────────
+# Interview sessions live in PostgreSQL — no process-local cache needed,
+# so any backend replica can resume a session that started on another pod.
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 MODEL_NAME = "gemini-3.1-flash-lite"
@@ -27,6 +32,12 @@ MODEL_NAME = "gemini-3.1-flash-lite"
 
 app = FastAPI(title="DevOps Mock Interview Platform")
 api_router = APIRouter(prefix="/api")
+
+
+@app.on_event("startup")
+def _startup() -> None:
+    init_db()
+    logger.info("PostgreSQL DB schema ready")
 
 
 # ---------- Models ----------
@@ -158,6 +169,18 @@ def extract_json(text: str) -> dict:
         raise
 
 
+def _parse_report(report) -> Optional[dict]:
+    """Normalise a final_report value from the DB (JSON string or dict) to a dict."""
+    if not report:
+        return None
+    if isinstance(report, str):
+        try:
+            return json.loads(report)
+        except Exception:
+            return None
+    return report
+
+
 async def call_interviewer(session_id: str, system_prompt: str, user_text: str) -> dict:
 
     payload = {
@@ -254,6 +277,61 @@ async def root():
     return {"service": "DevOps Mock Interview Platform", "status": "ok"}
 
 
+# ── Auth ──────────────────────────────────────────────────────────────────────
+@api_router.post("/auth/register", response_model=dict)
+async def register(req: RegisterRequest):
+    email = req.email.strip().lower()
+    username = req.username.strip()
+    full_name = req.full_name.strip()
+    password = req.password
+
+    # basic validation
+    if "@" not in email or "." not in email or len(email) < 5:
+        raise HTTPException(400, "Invalid email")
+    if len(username) < 3 or not re.match(r"^[A-Za-z0-9_.-]+$", username):
+        raise HTTPException(400, "Username must be 3+ chars (letters, numbers, _ . -)")
+    if len(password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters")
+    if not full_name:
+        raise HTTPException(400, "Full name required")
+
+    if get_user_by_email(email) is not None:
+        raise HTTPException(409, "An account with that email already exists")
+    if get_user_by_username(username) is not None:
+        raise HTTPException(409, "That username is already taken")
+
+    user_id = database.create_user(
+        email=email,
+        username=username,
+        password_hash=hash_password(password),
+        full_name=full_name,
+        created_at=now_iso(),
+    )
+    user_row = database.get_user_by_id(user_id)
+    token = create_access_token(user_id, username)
+    return {"token": token, "user": user_to_public(user_row).model_dump()}
+
+
+@api_router.post("/auth/login", response_model=dict)
+async def login(req: LoginRequest):
+    identifier = req.identifier.strip()
+    password = req.password
+    if not identifier or not password:
+        raise HTTPException(400, "Identifier and password required")
+
+    user = get_user_by_email(identifier.lower()) if "@" in identifier else get_user_by_username(identifier)
+    if user is None or not verify_password(password, user["password_hash"]):
+        raise HTTPException(401, "Invalid credentials")
+
+    token = create_access_token(user["id"], user["username"])
+    return {"token": token, "user": user_to_public(user).model_dump()}
+
+
+@api_router.get("/auth/me", response_model=UserPublic)
+async def me(user=Depends(get_current_user)):
+    return user_to_public(user)
+
+
 @api_router.get("/topics")
 async def get_topics():
     return {
@@ -278,11 +356,13 @@ async def get_topics():
 
 
 @api_router.post("/interview/start")
-async def start_interview(req: StartInterviewRequest):
+async def start_interview(req: StartInterviewRequest, user=Depends(get_optional_user)):
     if not req.topics:
         raise HTTPException(400, "At least one topic required")
     if not req.candidate_name.strip():
         raise HTTPException(400, "candidate_name required")
+
+    user_id = user["id"] if user is not None else None
 
     session_id = str(uuid.uuid4())
     system_prompt = build_system_prompt(req.topics, req.difficulty, req.candidate_name)
@@ -318,9 +398,21 @@ async def start_interview(req: StartInterviewRequest):
         messages=[first_msg],
     )
 
-    doc = session.model_dump()
-    doc["_system_prompt"] = system_prompt
-    interviews_db[session_id] = doc             # ← save to memory
+    # Persist metadata AND live state to PostgreSQL in one shot. Any backend
+    # replica can now resume this session via database.get_interview().
+    database.create_interview(
+        session_id=session_id,
+        user_id=user_id,
+        candidate_name=session.candidate_name,
+        topics=",".join(session.topics),
+        difficulty=session.difficulty,
+        mode=session.mode,
+        duration_minutes=session.duration_minutes,
+        started_at=session.started_at,
+        messages=[first_msg.model_dump()],
+        scores=[],
+        system_prompt=system_prompt,
+    )
 
     return {
         "session_id": session_id,
@@ -338,15 +430,15 @@ async def start_interview(req: StartInterviewRequest):
 
 @api_router.post("/interview/answer")
 async def submit_answer(req: AnswerRequest):
-    doc = interviews_db.get(req.session_id)     # ← read from memory
+    doc = database.get_interview(req.session_id)  # ← read from Postgres
     if not doc:
         raise HTTPException(404, "Session not found")
     if doc.get("status") == "completed":
         raise HTTPException(400, "Session already completed")
 
-    system_prompt = doc["_system_prompt"]
-    messages = doc.get("messages", [])
-    scores = doc.get("scores", [])
+    system_prompt = doc["system_prompt"]
+    messages = doc.get("messages") or []
+    scores = doc.get("scores") or []
 
     candidate_msg = {
         "role": "candidate",
@@ -400,7 +492,7 @@ async def submit_answer(req: AnswerRequest):
     }
     messages.append(interviewer_msg)
 
-    interviews_db[req.session_id].update({"messages": messages, "scores": scores})  # ← update memory
+    database.update_interview_messages(req.session_id, messages, scores)
 
     avg_score = round(sum(scores) / len(scores), 1) if scores else 0
     question_number = sum(1 for m in messages if m["role"] == "interviewer")
@@ -420,49 +512,102 @@ async def submit_answer(req: AnswerRequest):
 
 @api_router.post("/interview/end/{session_id}")
 async def end_interview(session_id: str):
-    doc = interviews_db.get(session_id)         # ← read from memory
+    doc = database.get_interview(session_id)    # ← read from Postgres
     if not doc:
         raise HTTPException(404, "Session not found")
     if doc.get("status") == "completed" and doc.get("final_report"):
-        return {"session_id": session_id, "report": doc["final_report"]}
+        cached = doc["final_report"]
+        if isinstance(cached, str):
+            try:
+                cached = json.loads(cached)
+            except Exception:
+                pass
+        return {"session_id": session_id, "report": cached}
 
-    messages = doc.get("messages", [])
+    messages = doc.get("messages") or []
     transcript = messages_to_transcript(messages)
     if not transcript.strip():
         raise HTTPException(400, "No transcript to evaluate")
 
+    # topics is stored comma-separated in the DB; the reporter wants a list.
+    topic_list = [t for t in (doc.get("topics") or "").split(",") if t]
+
     try:
-        report = await call_reporter(session_id, transcript, doc["topics"], doc["difficulty"])
+        report = await call_reporter(session_id, transcript, topic_list, doc["difficulty"])
     except Exception as e:
         logger.exception("Report generation failed")
         raise HTTPException(500, f"Report failed: {e}")
 
-    interviews_db[session_id].update({          # ← update memory
-        "status": "completed",
-        "ended_at": now_iso(),
-        "final_report": report,
-    })
+    ended_at = now_iso()
+    database.update_interview_completion(session_id, ended_at, report)
 
     return {"session_id": session_id, "report": report}
 
 
 @api_router.get("/interview/{session_id}")
 async def get_interview(session_id: str):
-    doc = interviews_db.get(session_id)         # ← read from memory
+    doc = database.get_interview(session_id)    # ← read from Postgres
     if not doc:
         raise HTTPException(404, "Session not found")
-    return {k: v for k, v in doc.items() if k != "_system_prompt"}
+    # final_report is stored as a JSON string in Postgres; return it parsed.
+    doc["final_report"] = _parse_report(doc.get("final_report"))
+    # Don't leak the system prompt to the client.
+    return {k: v for k, v in doc.items() if k != "system_prompt"}
 
 
 @api_router.get("/interviews")
-async def list_interviews(candidate_name: Optional[str] = None, limit: int = 50):
-    items = []
-    for doc in interviews_db.values():
-        if candidate_name and doc.get("candidate_name") != candidate_name:
+async def list_interviews(
+    candidate_name: Optional[str] = None,
+    limit: int = 50,
+    user=Depends(get_optional_user),
+):
+    # Everything lives in Postgres now — authenticated users see only their
+    # own sessions; anonymous users see the (user_id IS NULL) bucket that
+    # captures all sessions started without a token.
+    items: list[dict] = []
+    with cursor() as c:
+        if user is not None:
+            c.execute(
+                "SELECT session_id, candidate_name, topics, difficulty, mode, duration_minutes, "
+                "started_at, ended_at, status, final_report "
+                "FROM interviews WHERE user_id = %s ORDER BY started_at DESC LIMIT %s",
+                (user["id"], limit),
+            )
+        else:
+            c.execute(
+                "SELECT session_id, candidate_name, topics, difficulty, mode, duration_minutes, "
+                "started_at, ended_at, status, final_report "
+                "FROM interviews WHERE user_id IS NULL ORDER BY started_at DESC LIMIT %s",
+                (limit,),
+            )
+        rows = c.fetchall()
+
+    for row in rows:
+        if candidate_name and row["candidate_name"] != candidate_name:
             continue
-        items.append({k: v for k, v in doc.items() if k not in ("_system_prompt", "messages")})
-    items.sort(key=lambda x: x.get("started_at", ""), reverse=True)
-    return {"sessions": items[:limit]}
+        topics = [t for t in (row["topics"] or "").split(",") if t]
+        report = None
+        if row["final_report"]:
+            if isinstance(row["final_report"], str):
+                try:
+                    report = json.loads(row["final_report"])
+                except Exception:
+                    report = None
+            else:
+                report = row["final_report"]
+        items.append({
+            "id": row["session_id"],
+            "candidate_name": row["candidate_name"],
+            "topics": topics,
+            "difficulty": row["difficulty"],
+            "mode": row["mode"],
+            "duration_minutes": row["duration_minutes"],
+            "started_at": row["started_at"],
+            "ended_at": row["ended_at"],
+            "status": row["status"],
+            "final_report": report,
+        })
+    return {"sessions": items}
 
 
 @api_router.post("/voice/transcribe")

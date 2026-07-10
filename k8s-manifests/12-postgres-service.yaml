@@ -1,0 +1,41 @@
+# =============================================================================
+# PostgreSQL services.
+#   * postgres-headless   — StatefulSet-stable DNS (postgres-0.postgres-headless.tmi.svc.cluster.local)
+#   * postgres            — regular ClusterIP that the backend connects to.
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: take-my-interview
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: take-my-interview
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: take-my-interview
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: take-my-interview
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+      protocol: TCP

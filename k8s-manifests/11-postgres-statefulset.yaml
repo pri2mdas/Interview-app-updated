@@ -1,0 +1,149 @@
+# =============================================================================
+# PostgreSQL StatefulSet — single primary instance with a persistent volume.
+#
+# Why StatefulSet (not Deployment):
+#   * Stable network identity (`postgres-0.tmi-headless...`) — required if you
+#     later add read replicas or migrate to a Zalando/Crunchy operator.
+#   * Ordered, graceful scaling — a second replica is never created with the
+#     same name simultaneously.
+#   * Per-pod PersistentVolumeClaim via `volumeClaimTemplates` survives pod
+#     rescheduling.
+#
+# For a multi-replica HA setup, layer a Postgres operator on top of this
+# StatefulSet. A single instance is fine for most workloads < ~1k writes/s.
+# =============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/part-of: take-my-interview
+    app.kubernetes.io/component: database
+spec:
+  serviceName: postgres-headless
+  replicas: 1
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+      app.kubernetes.io/part-of: take-my-interview
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/part-of: take-my-interview
+        app.kubernetes.io/component: database
+      annotations:
+        # Force a redeploy whenever the credentials Secret changes. Kustomize
+        # rewrites this annotation at build time.
+        tmi.pritam.dev/secret-checksum: "REPLACE_ME_AT_BUILD_TIME"
+    spec:
+      serviceAccountName: postgres
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999            # postgres uid inside the alpine image
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+
+          # Startup probe gives the DB plenty of time to initialise on first
+          # boot (extracting a fresh data dir can take 30s+ on slow disks).
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+              ephemeral-storage: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+              ephemeral-storage: "2Gi"
+
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+
+          env:
+            # Force a writable PGDATA — the stock image defaults to
+            # /var/lib/postgresql/data which is on the rootfs. We keep the
+            # default here but point it at the PVC mount below.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_INITDB_ARGS
+              value: "--encoding=UTF8 --locale=C"
+            # Reasonable production defaults.
+            - name: POSTGRES_MAX_CONNECTIONS
+              value: "200"
+            - name: POSTGRES_SHARED_BUFFERS
+              value: "256MB"
+            - name: POSTGRES_EFFECTIVE_CACHE_SIZE
+              value: "768MB"
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            # Postgres needs writable scratch + unix socket dirs even with
+            # readOnlyRootFilesystem.
+            - name: tmp
+              mountPath: /tmp
+            - name: run
+              mountPath: /var/run/postgresql
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/name: postgres
+          app.kubernetes.io/part-of: take-my-interview
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard       # override per cloud (e.g. gp3, pd-ssd)
+        resources:
+          requests:
+            storage: 10Gi

@@ -1,0 +1,18 @@
+# =============================================================================
+# Namespace — isolates the entire app from anything else running in the cluster.
+# Pod Security Standards: "restricted" enforces non-root + no privilege escalation
+# + drop-all-caps + read-only rootfs at admission time.
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tmi
+  labels:
+    app.kubernetes.io/part-of: take-my-interview
+    app.kubernetes.io/managed-by: kustomize
+    name: tmi
+    # Pod Security Standards admission labels (k8s 1.25+).
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

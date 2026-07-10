@@ -1,0 +1,119 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# PostgreSQL — Secret + Headless Service + ClusterIP Service + StatefulSet.
+#
+# Why a StatefulSet (not a Deployment):
+#   * Stable network identity (postgres-0.postgres-headless.tmi.svc.cluster.local)
+#     — required for future read-replicas or migration to a Postgres operator.
+#   * Ordered, graceful scaling — never two pods with the same identity at once.
+#   * volumeClaimTemplate gives every replica its own dedicated PVC that
+#     survives pod rescheduling.
+#
+# Two services:
+#   * postgres-headless  — headless (clusterIP: None) for stable per-pod DNS,
+#                          required by the StatefulSet's `serviceName`.
+#   * postgres           — regular ClusterIP that the backend connects to.
+# ─────────────────────────────────────────────────────────────────────────────
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-credentials
+  namespace: tmi
+type: Opaque
+stringData:
+  POSTGRES_DB: "tmi"
+  POSTGRES_USER: "tmi"
+  POSTGRES_PASSWORD: >-
+    PLACEHOLDER_USE_OPENSSL_RAND_BASE64_24_TO_GENERATE
+---
+# Headless service — gives the StatefulSet pod a stable DNS name
+# (postgres-0.postgres-headless.tmi.svc.cluster.local). clusterIP: None is
+# what makes it "headless".
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless
+  namespace: tmi
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+---
+# Regular ClusterIP — what the backend's DATABASE_URL points at.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: tmi
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: tmi
+spec:
+  serviceName: postgres-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "tmi", "-d", "tmi"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "tmi", "-d", "tmi"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  # volumeClaimTemplate is the StatefulSet pattern for per-replica persistent
+  # storage — a PVC is created automatically for each pod (postgres-data-0,
+  # postgres-data-1, …) and stays bound to that pod's identity.
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # Use your cluster's default StorageClass — gp3 on EKS, standard on GKE.
+        storageClassName: gp3
+        resources:
+          requests:
+            storage: 20Gi

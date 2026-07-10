@@ -1,0 +1,59 @@
+# =============================================================================
+# Kustomize entrypoint. Apply with:
+#
+#   kubectl apply -k k8s-manifests
+#
+# Override the host / image registry per-environment by layering a
+# `kustomization.yaml` that `bases:` this one — for example:
+#
+#   # overlays/production/kustomization.yaml
+#   apiVersion: kustomize.config.k8s.io/v1beta1
+#   kind: Kustomization
+#   bases: [../../k8s-manifests]
+#   images:
+#     - name: take-my-interview/backend
+#       newName: registry.example.com/tmi/backend
+#       newTag: v1.2.3
+#   patchesStrategicMerge:
+#     - ingress-patch.yaml
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: tmi
+
+# Load all manifests in this directory, in numeric filename order.
+resources:
+  - 00-namespace.yaml
+  - 10-postgres-secret.yaml
+  - 11-postgres-statefulset.yaml
+  - 12-postgres-service.yaml
+  - 13-postgres-serviceaccount.yaml
+  - 20-backend-configmap.yaml
+  - 21-backend-secret.yaml
+  - 22-backend-deployment.yaml
+  - 23-backend-service.yaml
+  - 24-backend-hpa.yaml
+  - 25-backend-pdb.yaml
+  - 26-backend-serviceaccount.yaml
+  - 30-frontend-configmap.yaml
+  - 31-frontend-deployment.yaml
+  - 32-frontend-service.yaml
+  - 33-frontend-hpa.yaml
+  - 34-frontend-pdb.yaml
+  - 35-frontend-serviceaccount.yaml
+  - 40-ingress.yaml
+  - 50-network-policies.yaml
+
+# Standard labels attached to every resource for label-selectors, billing,
+# monitoring, etc.
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/part-of: take-my-interview
+      app.kubernetes.io/managed-by: kustomize
+
+# ── Common annotations ───────────────────────────────────────────────────────
+# These are merged into every resource; resource-specific annotations win.
+commonAnnotations:
+  kustomize.toolkit.fluxcd.io/name: take-my-interview

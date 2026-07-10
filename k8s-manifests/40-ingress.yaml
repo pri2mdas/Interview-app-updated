@@ -1,0 +1,50 @@
+# =============================================================================
+# Ingress — TLS-terminated public entrypoint.
+#
+# Two annotations worth noting:
+#   * nginx.ingress.kubernetes.io/proxy-body-size: matches the 30m limit in
+#     the frontend nginx so large voice uploads don't get 413'd at the edge.
+#   * cert-manager.io/cluster-issuer: lets cert-manager auto-issue a Let's
+#     Encrypt cert for the host. Remove if you bring your own cert.
+#
+# If you're using a different ingress controller (Traefik, HAProxy, ALB,
+# Cloudflare, etc.), change `ingressClassName` and the annotations.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: take-my-interview
+  namespace: tmi
+  labels:
+    app.kubernetes.io/part-of: take-my-interview
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "30m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Force HTTPS.
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - take-my-interview.example.com
+      secretName: take-my-interview-tls
+  rules:
+    - host: take-my-interview.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 7000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

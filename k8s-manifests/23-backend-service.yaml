@@ -1,0 +1,23 @@
+# =============================================================================
+# Backend ClusterIP service. The frontend nginx container reverse-proxies
+# /api/* here. Ingress also routes /api/* traffic here.
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: take-my-interview
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: take-my-interview
+  ports:
+    - name: http
+      port: 7000
+      targetPort: http
+      protocol: TCP
+      appProtocol: http

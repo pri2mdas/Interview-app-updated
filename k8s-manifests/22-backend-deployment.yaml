@@ -1,0 +1,145 @@
+# =============================================================================
+# Backend Deployment — FastAPI behind 2+ replicas.
+#   * Rolling update, surge=1, unavailable=0 → zero-downtime deploys.
+#   * Pod anti-affinity keeps replicas on different nodes.
+#   * startup / readiness / liveness probes hit `/api/`.
+#   * Security context: non-root, read-only rootfs, drop-ALL caps.
+#   * envFrom wires configmap (non-secret) + secret (sensitive) cleanly.
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: take-my-interview
+    app.kubernetes.io/component: api
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/part-of: take-my-interview
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend
+        app.kubernetes.io/part-of: take-my-interview
+        app.kubernetes.io/component: api
+    spec:
+      serviceAccountName: backend
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Spread replicas across nodes/zones for HA.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend
+              app.kubernetes.io/part-of: take-my-interview
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend
+              app.kubernetes.io/part-of: take-my-interview
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: backend
+                    app.kubernetes.io/part-of: take-my-interview
+
+      containers:
+        - name: backend
+          # Override `--image` per environment via Kustomize image override.
+          image: take-my-interview/backend:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 7000
+              protocol: TCP
+
+          # startup probe gives a fresh container up to 2 min to come up
+          # (uvicorn + psycopg2 pool warm-up).
+          startupProbe:
+            httpGet:
+              path: /api/
+              port: http
+            failureThreshold: 24
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+              ephemeral-storage: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+              ephemeral-storage: "512Mi"
+
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+
+          # /tmp must be writable for Python's tempfile + uvicorn's
+          # --reload-state even though the rootfs is read-only.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
+
+      terminationGracePeriodSeconds: 30

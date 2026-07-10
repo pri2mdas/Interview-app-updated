@@ -1,0 +1,18 @@
+# =============================================================================
+# PodDisruptionBudget — guarantees at least one backend replica is available
+# during voluntary disruptions (node drains, upgrades, autoscaler scale-down).
+# =============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend
+  namespace: tmi
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: take-my-interview
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+      app.kubernetes.io/part-of: take-my-interview

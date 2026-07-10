@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Nav from "@/components/Nav";
 import { getTopics, startInterview } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import {
   SiKubernetes, SiTerraform, SiHelm, SiArgo, SiDocker, SiJenkins,
@@ -23,6 +24,7 @@ const DIFFICULTIES = [
 
 export default function Setup() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [topics, setTopics] = useState([]);
   const [selectedTopics, setSelectedTopics] = useState([]);
@@ -33,9 +35,14 @@ export default function Setup() {
 
   useEffect(() => {
     getTopics().then(setTopics).catch(() => toast.error("Failed to load topics"));
-    const saved = localStorage.getItem("candidate_name");
-    if (saved) setName(saved);
-  }, []);
+    // If the user is logged in, default to their full name. Otherwise fall back to a saved value.
+    if (user?.full_name) {
+      setName(user.full_name);
+    } else {
+      const saved = localStorage.getItem("candidate_name");
+      if (saved) setName(saved);
+    }
+  }, [user]);
 
   const toggleTopic = (id) => {
     setSelectedTopics((p) => (p.includes(id) ? p.filter((t) => t !== id) : [...p, id]));

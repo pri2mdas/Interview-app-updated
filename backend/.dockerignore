@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Backend .dockerignore — keep secrets, caches, and noise out of the image.
+# Real config is injected at runtime via docker-compose `env_file`, NOT baked
+# into the image. The DB lives on a named volume, not in the build context.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Virtualenvs — the image installs into its own interpreter
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets / local config — never bake these in
+.env
+.env.*
+!.env.example
+
+# Local data — lives on a named volume at runtime
+tmi.db
+tmi.db-shm
+tmi.db-wal
+*.sqlite
+*.sqlite3
+
+# Tests / dev scripts
+tests/
+test_*.py
+*_test.py
+
+# Legacy file referenced in repo but unused by the running app
+old-server.py
+
+# VCS / IDE
+.git/
+.gitignore
+.gitattributes
+.github/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Project-level noise
+README.md
+*.md
+.mlem/
+.mcp_config*
+test_reports/
+memory/

@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Nav from "@/components/Nav";
 import { listInterviews } from "@/lib/api";
-import { Loader2, ChevronRight, Clock } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { Loader2, ChevronRight, Clock, ShieldCheck } from "lucide-react";
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -12,23 +13,24 @@ function formatDate(iso) {
 
 export default function History() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
 
-  useEffect(() => {
-    const name = localStorage.getItem("candidate_name") || "";
-    setFilter(name);
-    listInterviews(name || undefined)
+  // When authed, the backend already scopes results to the logged-in user, so we don't
+  // pass any candidate_name filter. Pass `undefined` for both states to keep behaviour identical
+  // if the JWT happens to be expired and the call falls back to the anonymous branch.
+  const load = () => {
+    setLoading(true);
+    listInterviews(undefined)
       .then(setSessions)
       .finally(() => setLoading(false));
-  }, []);
-
-  const refilter = (n) => {
-    setFilter(n);
-    setLoading(true);
-    listInterviews(n || undefined).then(setSessions).finally(() => setLoading(false));
   };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <div className="min-h-screen relative z-10 bg-white dark:bg-zinc-950">
@@ -39,18 +41,34 @@ export default function History() {
           <div>
             <div className="font-mono-ui text-[11px] tracking-[0.3em] uppercase text-green-600 dark:text-green-400 mb-3">// archive</div>
             <h1 className="font-display font-black text-zinc-900 dark:text-zinc-50 text-4xl sm:text-5xl tracking-tighter">Session History</h1>
-            <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 mt-2">All past interviews. Click any row to view the full report.</p>
+            <p className="font-mono-ui text-sm text-zinc-500 dark:text-zinc-400 mt-2">
+              {user
+                ? "All past interviews tied to your account. Click any row to view the full report."
+                : "All past interviews. Click any row to view the full report."}
+            </p>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="font-mono-ui text-[10px] tracking-[0.3em] uppercase text-zinc-500">filter_by_name</label>
-            <input
-              data-testid="history-filter"
-              value={filter}
-              onChange={(e) => refilter(e.target.value)}
-              placeholder="all candidates"
-              className="bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-green-500 outline-none font-mono-ui text-sm text-zinc-900 dark:text-zinc-100 py-2 px-1 placeholder:text-zinc-700 dark:text-zinc-300 transition-colors min-w-[240px]"
-            />
-          </div>
+          {user && (
+            <div
+              data-testid="history-user-chip"
+              className="border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/60 px-4 py-3 flex items-center gap-3"
+            >
+              <ShieldCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <div className="leading-tight">
+                <div className="font-mono-ui text-[10px] tracking-[0.25em] uppercase text-zinc-500">scoped_to</div>
+                <div className="font-mono-ui text-sm text-zinc-900 dark:text-zinc-100">
+                  @{user.username}
+                </div>
+              </div>
+              <button
+                onClick={load}
+                data-testid="history-refresh-btn"
+                className="ml-2 font-mono-ui text-[10px] uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400 transition-colors border border-zinc-300 dark:border-zinc-700 hover:border-green-500 px-2 py-1 rounded-sm"
+                title="Refresh"
+              >
+                refresh
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="border border-zinc-200 dark:border-zinc-800">
@@ -88,14 +106,16 @@ export default function History() {
                     key={s.id}
                     data-testid={`history-row-${s.id}`}
                     onClick={() => navigate(s.status === "completed" ? `/report/${s.id}` : `/interview/${s.id}`)}
-                    className="w-full grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-zinc-100 dark:bg-zinc-900/60 transition-colors text-left group"
+                    className="w-full grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-zinc-100 dark:hover:bg-zinc-900/60 transition-colors text-left group"
                   >
-                    <div className="col-span-3 font-mono-ui text-xs text-zinc-400 dark:text-zinc-700 dark:text-zinc-100 flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" /> {formatDate(s.started_at)}
+                    <div className="col-span-3 font-mono-ui text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" /> {formatDate(s.started_at)}
                     </div>
-                    <div className="col-span-2 font-mono-ui text-sm text-zinc-900 dark:text-zinc-100">{s.candidate_name}</div>
-                    <div className="col-span-3 font-mono-ui text-xs text-zinc-500 dark:text-zinc-800 dark:text-zinc-100 truncate">{(s.topics || []).join(", ")}</div>
-                    <div className="col-span-1 font-mono-ui text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-700 dark:text-zinc-100">{s.difficulty}</div>
+                    <div className="col-span-2 font-mono-ui text-sm text-zinc-900 dark:text-zinc-100 truncate">
+                      {s.candidate_name || user?.username || "—"}
+                    </div>
+                    <div className="col-span-3 font-mono-ui text-xs text-zinc-500 dark:text-zinc-400 truncate">{(s.topics || []).join(", ")}</div>
+                    <div className="col-span-1 font-mono-ui text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{s.difficulty}</div>
                     <div className="col-span-2">
                       <span className={`font-mono-ui text-[10px] uppercase tracking-[0.2em] px-2 py-1 ${s.status === "completed" ? "bg-green-600/15 dark:bg-green-500/10 text-green-600 dark:text-green-400" : "bg-amber-600/15 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"}`}>
                         {s.status}
@@ -105,7 +125,7 @@ export default function History() {
                       <span className={`font-mono-ui font-bold text-base ${overall >= 70 ? "text-green-600 dark:text-green-400" : overall >= 40 ? "text-amber-600 dark:text-amber-400" : overall != null ? "text-red-600 dark:text-red-400" : "text-zinc-500"}`}>
                         {overall != null ? overall : avg ? `${avg}/10` : "—"}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-zinc-700 dark:text-zinc-300 group-hover:text-green-600 dark:text-green-400 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500 group-hover:text-green-600 dark:group-hover:text-green-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </button>
                 );
