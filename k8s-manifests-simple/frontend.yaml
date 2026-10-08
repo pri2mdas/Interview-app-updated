@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: take-my-interview/frontend:latest
+          image: quantumpritam/take-my-interview:frontend-v1.3
           imagePullPolicy: Always
           ports:
             - containerPort: 80

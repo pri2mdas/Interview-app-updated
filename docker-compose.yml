@@ -54,7 +54,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: take-my-interview/backend:latest
+    image: quantumpritam/take-my-interview:backend-v1.2
     container_name: tmi-backend
     restart: unless-stopped
 
@@ -104,7 +104,7 @@ services:
         # on [REDACTED-URL] (the `ports:` mapping below). Override for
         # production (e.g. [REDACTED-URL]
         REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-}
-    image: take-my-interview/frontend:latest
+    image: quantumpritam/take-my-interview:frontend-v1.3
     container_name: tmi-frontend
     restart: unless-stopped
 
