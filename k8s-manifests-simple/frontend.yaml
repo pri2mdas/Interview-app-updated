@@ -20,6 +20,9 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+
       containers:
         - name: frontend
           image: quantumpritam/take-my-interview:frontend-v1.3

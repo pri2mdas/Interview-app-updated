@@ -7,12 +7,11 @@ Minimal production-grade K8s manifests for EKS / any cluster running the
 
 ```
 k8s-manifests-simple/
-├── 00-namespace.yaml            Namespace
-├── 10-postgres.yaml             Secret + PVC + Deployment + Service
-├── 20-backend.yaml              ConfigMap + Secret + Deployment + Service
-├── 30-frontend.yaml             Deployment + Service
-├── 40-ingress.yaml              AWS ALB Ingress (HTTPS via ACM cert)
-└── kustomization.yaml           `kubectl apply -k .`
+├── namespace.yaml            Namespace
+├── postgres.yaml             Secret + PVC + Deployment + Service
+├── backend.yaml              ConfigMap + Secret + Deployment + Service
+├── frontend.yaml             Deployment + Service
+├── ingress.yaml              AWS ALB Ingress (HTTPS via ACM cert)`
 ```
 
 ## Prereqs
@@ -26,12 +25,16 @@ k8s-manifests-simple/
 
 ## Deploy
 
+Add docker secrets to pull the image from docker hub
 ```bash
-# 1. Fill in real secrets and the ACM ARN.
-$EDITOR 10-postgres.yaml 20-backend.yaml 40-ingress.yaml
+kubectl create secret docker-registry dockerhub-secret \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username='<DOCKER_USERNAME>' \
+  --docker-password='<DOCKER_ACCESS_TOKEN>' \
+  -n tmi
 
 # 2. Apply.
-kubectl apply -k .
+kubectl apply -f .
 
 # 3. Watch the ALB come up (~1–2 min).
 kubectl -n tmi get ingress take-my-interview -w

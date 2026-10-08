@@ -9,7 +9,7 @@ metadata:
   name: backend-config
   namespace: tmi
 data:
-  HOST: [REDACTED-IP_ADDRESS]
+  HOST: "[REDACTED-IP_ADDRESS]"
   PORT: "7000"
   CORS_ORIGINS: "[REDACTED-URL]"
   DB_POOL_MAX: "10"
@@ -23,8 +23,8 @@ metadata:
 type: Opaque
 stringData:
   # In-cluster DNS: postgres.tmi.svc.cluster.local:5432
-  DATABASE_URL: "[REDACTED-DATABASE-CONNECTION-STRING]:5432/tmi"
-  GEMINI_API_KEY: "REPLACE_ME"
+  DATABASE_URL: "postgresql://tmi:PLACEHOLDER_USE_OPENSSL_RAND_BASE64_24_TO_GENERATE@postgres:5432/tmi"
+  GEMINI_API_KEY: "AQ.Ab8RN6JvRXQmP5Be3TalIdtZ8Utax-fICi6jEp9_xmnPxCgz4g"
   TMI_JWT_SECRET: "REPLACE_ME"
 ---
 apiVersion: apps/v1
@@ -44,9 +44,11 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
       containers:
         - name: backend
-          image: take-my-interview/backend:latest
+          image: quantumpritam/take-my-interview:backend-v1.2
           imagePullPolicy: Always
           ports:
             - containerPort: 7000
