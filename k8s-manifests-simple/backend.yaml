@@ -24,7 +24,7 @@ type: Opaque
 stringData:
   # In-cluster DNS: postgres.tmi.svc.cluster.local:5432
   DATABASE_URL: "postgresql://tmi:PLACEHOLDER_USE_OPENSSL_RAND_BASE64_24_TO_GENERATE@postgres:5432/tmi"
-  GEMINI_API_KEY: "AQ.Ab8RN6JvRXQmP5Be3TalIdtZ8Utax-fICi6jEp9_xmnPxCgz4g"
+  GEMINI_API_KEY: "AQ.Ab8RN6Ik2X7wVcc-34kgwkSsmioA42xbOCjRX1HAJIiaJMjjsQ"
   TMI_JWT_SECRET: "REPLACE_ME"
 ---
 apiVersion: apps/v1
